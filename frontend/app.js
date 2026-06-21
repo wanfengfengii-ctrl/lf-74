@@ -17,11 +17,25 @@ async function apiRequest(url, options = {}) {
             headers: { "Content-Type": "application/json" },
             ...options,
         });
-        const data = response.ok ? await response.json() : null;
+        const text = await response.text();
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (e) {
+            data = null;
+        }
         if (!response.ok) {
             let errorMsg = `请求失败 (${response.status})`;
             if (data && data.detail) {
                 errorMsg = data.detail;
+            } else if (text && text.trim()) {
+                try {
+                    const parsed = JSON.parse(text);
+                    if (parsed.detail) errorMsg = parsed.detail;
+                    else errorMsg = text.substring(0, 200);
+                } catch {
+                    errorMsg = text.substring(0, 200);
+                }
             }
             throw new Error(errorMsg);
         }
@@ -146,19 +160,55 @@ async function submitLeafForm(e) {
 
     const holesText = document.getElementById("leafHoles").value.trim();
     const holes = [];
+    const parseErrors = [];
     if (holesText) {
         const lines = holesText.split("\n").filter((l) => l.trim());
-        for (const line of lines) {
-            const parts = line.split(",").map((p) => parseFloat(p.trim()));
-            if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                holes.push({ x: parts[0], y: parts[1] });
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const parts = line.split(",").map((p) => p.trim());
+            if (parts.length < 2) {
+                parseErrors.push(`第 ${i + 1} 行格式错误：需要用逗号分隔两个数字，例如 "10.5, 20.3"`);
+                continue;
             }
+            const x = parseFloat(parts[0]);
+            const y = parseFloat(parts[1]);
+            if (isNaN(x) || isNaN(y)) {
+                parseErrors.push(`第 ${i + 1} 行格式错误："${line}" 不是有效的数字`);
+                continue;
+            }
+            holes.push({ x, y });
         }
     }
 
+    if (parseErrors.length > 0) {
+        showToast("穿孔坐标格式错误：\n" + parseErrors.join("\n"), "error");
+        return;
+    }
+
+    const leafLength = parseFloat(document.getElementById("leafLength").value);
+    const leafWidth = parseFloat(document.getElementById("leafWidth").value);
+
+    for (let i = 0; i < holes.length; i++) {
+        const h = holes[i];
+        if (h.x < 0 || h.x > leafWidth) {
+            parseErrors.push(`第 ${i + 1} 个穿孔 X 坐标 ${h.x} 超出宽度范围 [0, ${leafWidth}]`);
+        }
+        if (h.y < 0 || h.y > leafLength) {
+            parseErrors.push(`第 ${i + 1} 个穿孔 Y 坐标 ${h.y} 超出长度范围 [0, ${leafLength}]`);
+        }
+    }
+
+    if (parseErrors.length > 0) {
+        showToast("穿孔坐标超出范围：\n" + parseErrors.join("\n"), "error");
+        return;
+    }
+
+    const oldLeaf = state.editingLeafId ? state.leaves.find((l) => l.id === state.editingLeafId) : null;
+    const residualTextChanged = oldLeaf && oldLeaf.residual_text !== document.getElementById("leafText").value.trim();
+
     const payload = {
-        length: parseFloat(document.getElementById("leafLength").value),
-        width: parseFloat(document.getElementById("leafWidth").value),
+        length: leafLength,
+        width: leafWidth,
         holes,
         residual_text: document.getElementById("leafText").value.trim(),
         damage: document.getElementById("leafDamage").value.trim(),
@@ -183,6 +233,24 @@ async function submitLeafForm(e) {
     document.getElementById("leafModal").classList.remove("active");
     await loadLeaves();
     await loadPlans();
+
+    if (residualTextChanged || state.editingLeafId) {
+        const affectedPlans = state.plans.filter((p) => p.leaves.some((l) => l.leaf_id === (state.editingLeafId || payload.id)));
+        for (const plan of affectedPlans) {
+            try {
+                await apiRequest(`${API_BASE}/plans/${plan.id}/recalculate`, { method: "POST" });
+            } catch (e) {}
+        }
+        await loadPlans();
+        if (state.currentViewingPlanId) {
+            await viewPlan(state.currentViewingPlanId);
+        }
+
+        const sortTab = document.getElementById("sort");
+        if (sortTab.classList.contains("active") && document.getElementById("sortResult").innerHTML.trim() !== "") {
+            await runSort();
+        }
+    }
 }
 
 async function deleteLeaf(leafId) {

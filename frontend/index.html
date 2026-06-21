@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贝叶经叶片整理系统</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <h1>贝叶经叶片整理系统</h1>
+        <p class="subtitle">根据穿绳孔位置、残存文字和叶片尺寸推测原始顺序</p>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="leaves">叶片管理</button>
+        <button class="tab-btn" data-tab="plans">复原方案</button>
+        <button class="tab-btn" data-tab="sort">排序推荐</button>
+    </nav>
+
+    <main class="container">
+        <section id="leaves" class="tab-content active">
+            <div class="panel">
+                <h2>叶片列表</h2>
+                <button id="addLeafBtn" class="btn btn-primary">+ 添加叶片</button>
+                <div id="leavesList" class="leaves-grid"></div>
+            </div>
+        </section>
+
+        <section id="plans" class="tab-content">
+            <div class="panel">
+                <h2>复原方案</h2>
+                <button id="addPlanBtn" class="btn btn-primary">+ 新建方案</button>
+                <div id="plansList" class="plans-grid"></div>
+            </div>
+        </section>
+
+        <section id="sort" class="tab-content">
+            <div class="panel">
+                <h2>智能排序推荐</h2>
+                <div class="sort-controls">
+                    <div class="control-group">
+                        <label>起始叶片：</label>
+                        <select id="startLeafSelect">
+                            <option value="">自动选择</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>孔位权重：</label>
+                        <input type="range" id="holeWeight" min="0" max="1" step="0.1" value="0.5">
+                        <span id="holeWeightVal">0.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label>残文权重：</label>
+                        <input type="range" id="textWeight" min="0" max="1" step="0.1" value="0.5">
+                        <span id="textWeightVal">0.5</span>
+                    </div>
+                    <button id="runSortBtn" class="btn btn-primary">执行排序</button>
+                </div>
+                <div id="sortResult" class="sort-result"></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="leafModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="leafModal">&times;</span>
+            <h2 id="leafModalTitle">添加叶片</h2>
+            <form id="leafForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>叶片编号 *</label>
+                        <input type="text" id="leafId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>长度 (mm) *</label>
+                        <input type="number" id="leafLength" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>宽度 (mm) *</label>
+                        <input type="number" id="leafWidth" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>穿绳孔坐标 (X, Y，每行一个)</label>
+                    <textarea id="leafHoles" placeholder="例如：&#10;10.5, 20.3&#10;45.2, 20.3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>残存文字</label>
+                    <textarea id="leafText" rows="3" placeholder="输入叶片上残存的文字内容..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>破损情况</label>
+                    <textarea id="leafDamage" rows="2" placeholder="描述叶片的破损情况..."></textarea>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="leafConfirmed">
+                        已确认信息无误
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-secondary" data-close="leafModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="planModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="planModal">&times;</span>
+            <h2 id="planModalTitle">新建复原方案</h2>
+            <form id="planForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>方案编号 *</label>
+                        <input type="text" id="planId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>方案名称 *</label>
+                        <input type="text" id="planName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>方案说明</label>
+                    <textarea id="planDescription" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>选择叶片（按顺序添加）</label>
+                    <div class="plan-leaves-section">
+                        <div class="available-leaves">
+                            <h4>可用叶片</h4>
+                            <div id="availableLeavesList" class="leaf-select-list"></div>
+                        </div>
+                        <div class="plan-leaves-actions">
+                            <button type="button" id="addLeafToPlan" class="btn btn-sm">→</button>
+                            <button type="button" id="removeLeafFromPlan" class="btn btn-sm">←</button>
+                            <button type="button" id="moveLeafUp" class="btn btn-sm">↑</button>
+                            <button type="button" id="moveLeafDown" class="btn btn-sm">↓</button>
+                        </div>
+                        <div class="selected-leaves">
+                            <h4>已选叶片（当前顺序）</h4>
+                            <div id="selectedLeavesList" class="leaf-select-list"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="planFinal">
+                        标记为最终方案（所有叶片必须已确认）
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存方案</button>
+                    <button type="button" class="btn btn-secondary" data-close="planModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="planDetailModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" data-modal="planDetailModal">&times;</span>
+            <h2 id="planDetailTitle">方案详情</h2>
+            <div id="planDetailContent"></div>
+            <div class="form-actions">
+                <button type="button" id="editPlanBtn" class="btn btn-primary">编辑方案</button>
+                <button type="button" id="recalcScoreBtn" class="btn btn-secondary">重新计算评分</button>
+                <button type="button" id="deletePlanBtn" class="btn btn-danger">删除方案</button>
+                <button type="button" class="btn btn-secondary" data-close="planDetailModal">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

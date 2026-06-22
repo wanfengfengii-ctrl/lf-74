@@ -1,0 +1,53 @@
+{
+  "LF-TEST-001": {
+    "leaf_id": "LF-TEST-001",
+    "image_path": "images/LF-TEST-001_7b9e914b.png",
+    "image_width": 500,
+    "image_height": 200,
+    "scale": 10.0,
+    "holes": [
+      {
+        "id": "h1",
+        "x": 100.0,
+        "y": 50.0,
+        "real_x": 10.0,
+        "real_y": 5.0,
+        "note": ""
+      },
+      {
+        "id": "h2",
+        "x": 200.0,
+        "y": 50.0,
+        "real_x": 20.0,
+        "real_y": 5.0,
+        "note": ""
+      }
+    ],
+    "damage_regions": [
+      {
+        "id": "d1",
+        "x": 50.0,
+        "y": 100.0,
+        "width": 80.0,
+        "height": 60.0,
+        "severity": "mild",
+        "description": "edge wear"
+      }
+    ],
+    "text_regions": [
+      {
+        "id": "t1",
+        "x": 120.0,
+        "y": 120.0,
+        "width": 60.0,
+        "height": 30.0,
+        "text": "residual text content",
+        "linked_damage_ids": [
+          "d1"
+        ]
+      }
+    ],
+    "created_at": "2026-06-22T09:25:18.383677",
+    "updated_at": "2026-06-22T09:25:18.402759"
+  }
+}

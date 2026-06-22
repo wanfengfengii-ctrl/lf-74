@@ -1,0 +1,62 @@
+[
+  {
+    "id": "7babd9e1-493b-4061-a6d6-faa8872d9247",
+    "plan_id": "PLAN-A-001",
+    "version": 1,
+    "name": "v1-Initial",
+    "description": "First saved version",
+    "leaves": [
+      {
+        "leaf_id": "LF-TEST-001",
+        "order": 0,
+        "flipped": false,
+        "rotated": 0.0
+      },
+      {
+        "leaf_id": "LF-TEST-002",
+        "order": 1,
+        "flipped": false,
+        "rotated": 0.0
+      },
+      {
+        "leaf_id": "LF-TEST-003",
+        "order": 2,
+        "flipped": false,
+        "rotated": 0.0
+      }
+    ],
+    "score": 0.1634,
+    "is_final": false,
+    "snapshot_data": {
+      "id": "PLAN-A-001",
+      "name": "Plan A v1",
+      "description": "initial version",
+      "leaves": [
+        {
+          "leaf_id": "LF-TEST-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-TEST-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-TEST-003",
+          "order": 2,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "is_final": false,
+      "created_at": "2026-06-22T09:25:18.291292",
+      "updated_at": "2026-06-22T09:25:18.291292",
+      "score": 0.1634
+    },
+    "created_at": "2026-06-22T09:25:18.325003",
+    "operator": "system"
+  }
+]

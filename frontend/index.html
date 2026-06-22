@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>贝叶经叶片整理系统</title>
+    <title>贝叶经叶片整理系统 v2.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header class="header">
         <h1>贝叶经叶片整理系统</h1>
-        <p class="subtitle">根据穿绳孔位置、残存文字和叶片尺寸推测原始顺序</p>
+        <p class="subtitle">高清图片标注 · 方案智能比对 · 版本可追溯</p>
     </header>
 
     <nav class="tabs">
         <button class="tab-btn active" data-tab="leaves">叶片管理</button>
+        <button class="tab-btn" data-tab="annotate">图片标注</button>
         <button class="tab-btn" data-tab="plans">复原方案</button>
+        <button class="tab-btn" data-tab="compare">方案比对</button>
+        <button class="tab-btn" data-tab="audit">操作日志</button>
         <button class="tab-btn" data-tab="sort">排序推荐</button>
     </nav>
 
@@ -27,11 +30,137 @@
             </div>
         </section>
 
+        <section id="annotate" class="tab-content">
+            <div class="panel">
+                <h2>图片标注</h2>
+                <div class="annotate-controls">
+                    <div class="control-group">
+                        <label>选择叶片：</label>
+                        <select id="annotateLeafSelect">
+                            <option value="">请先选择叶片</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>标注工具：</label>
+                        <div class="tool-group" id="toolGroup">
+                            <button type="button" class="btn btn-sm tool-btn active" data-tool="hole">穿绳孔</button>
+                            <button type="button" class="btn btn-sm tool-btn" data-tool="damage">破损区域</button>
+                            <button type="button" class="btn btn-sm tool-btn" data-tool="text">残文区域</button>
+                        </div>
+                    </div>
+                    <button id="uploadImageBtn" class="btn btn-secondary">上传图片</button>
+                    <button id="saveAnnotationBtn" class="btn btn-primary">保存标注</button>
+                    <input type="file" id="imageFileInput" accept="image/*" style="display:none">
+                </div>
+                <div class="annotate-main">
+                    <div class="annotate-canvas-wrap">
+                        <canvas id="annotateCanvas" class="annotate-canvas"></canvas>
+                        <div id="canvasPlaceholder" class="canvas-placeholder">
+                            请先选择叶片并上传高清图片
+                        </div>
+                    </div>
+                    <div class="annotate-sidebar">
+                        <h4>标注列表</h4>
+                        <div class="annotation-section">
+                            <h5>穿绳孔 (<span id="holeCount">0</span>)</h5>
+                            <div id="holesList" class="annotation-list"></div>
+                        </div>
+                        <div class="annotation-section">
+                            <h5>破损区域 (<span id="damageCount">0</span>)</h5>
+                            <div id="damageList" class="annotation-list"></div>
+                        </div>
+                        <div class="annotation-section">
+                            <h5>残文区域 (<span id="textCount">0</span>)</h5>
+                            <div id="textList" class="annotation-list"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="scale-controls">
+                    <div class="control-group">
+                        <label>叶片实际长度 (mm)：</label>
+                        <input type="number" id="realLength" step="0.01" min="0" placeholder="输入实际长度">
+                    </div>
+                    <div class="control-group">
+                        <label>图片像素 / mm：</label>
+                        <input type="number" id="scaleValue" step="0.01" min="0" placeholder="自动计算">
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="plans" class="tab-content">
             <div class="panel">
                 <h2>复原方案</h2>
                 <button id="addPlanBtn" class="btn btn-primary">+ 新建方案</button>
                 <div id="plansList" class="plans-grid"></div>
+            </div>
+        </section>
+
+        <section id="compare" class="tab-content">
+            <div class="panel">
+                <h2>方案智能比对</h2>
+                <div class="compare-controls">
+                    <div class="control-group">
+                        <label>方案 A：</label>
+                        <select id="comparePlanA">
+                            <option value="">请选择方案</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>方案 B：</label>
+                        <select id="comparePlanB">
+                            <option value="">请选择方案</option>
+                        </select>
+                    </div>
+                    <button id="runCompareBtn" class="btn btn-primary">开始比对</button>
+                    <button id="exportCompareBtn" class="btn btn-secondary" disabled>导出报告</button>
+                </div>
+                <div id="compareResult" class="compare-result"></div>
+            </div>
+        </section>
+
+        <section id="audit" class="tab-content">
+            <div class="panel">
+                <h2>操作日志与版本回溯</h2>
+                <div class="audit-controls">
+                    <div class="control-group">
+                        <label>对象类型：</label>
+                        <select id="logTargetType">
+                            <option value="">全部</option>
+                            <option value="leaf">叶片</option>
+                            <option value="plan">方案</option>
+                            <option value="annotation">标注</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>操作类型：</label>
+                        <select id="logOpType">
+                            <option value="">全部</option>
+                            <option value="create">创建</option>
+                            <option value="update">更新</option>
+                            <option value="delete">删除</option>
+                            <option value="upload">上传</option>
+                            <option value="restore">恢复</option>
+                            <option value="confirm">确认</option>
+                        </select>
+                    </div>
+                    <button id="loadLogsBtn" class="btn btn-primary">加载日志</button>
+                </div>
+                <div id="auditLogs" class="audit-timeline"></div>
+
+                <h3 style="margin-top:30px; color:#6b4423;">方案版本管理</h3>
+                <div class="audit-controls">
+                    <div class="control-group">
+                        <label>选择方案：</label>
+                        <select id="versionPlanSelect">
+                            <option value="">请选择方案</option>
+                        </select>
+                    </div>
+                    <button id="loadVersionsBtn" class="btn btn-primary">查看版本</button>
+                    <button id="createVersionBtn" class="btn btn-secondary">创建快照</button>
+                    <button id="exportVersionsBtn" class="btn btn-secondary" disabled>导出报告</button>
+                </div>
+                <div id="planVersions" class="plan-versions"></div>
             </div>
         </section>
 
@@ -165,11 +294,79 @@
             <h2 id="planDetailTitle">方案详情</h2>
             <div id="planDetailContent"></div>
             <div class="form-actions">
+                <button type="button" id="createSnapshotBtn" class="btn btn-secondary">创建版本快照</button>
                 <button type="button" id="editPlanBtn" class="btn btn-primary">编辑方案</button>
                 <button type="button" id="recalcScoreBtn" class="btn btn-secondary">重新计算评分</button>
                 <button type="button" id="deletePlanBtn" class="btn btn-danger">删除方案</button>
                 <button type="button" class="btn btn-secondary" data-close="planDetailModal">关闭</button>
             </div>
+        </div>
+    </div>
+
+    <div id="damageModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="damageModal">&times;</span>
+            <h2>破损区域信息</h2>
+            <form id="damageForm">
+                <div class="form-group">
+                    <label>破损程度</label>
+                    <select id="damageSeverity">
+                        <option value="mild">轻微</option>
+                        <option value="medium" selected>中等</option>
+                        <option value="severe">严重</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>破损描述</label>
+                    <textarea id="damageDesc" rows="3" placeholder="描述破损情况..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">确定</button>
+                    <button type="button" class="btn btn-secondary" data-close="damageModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="textModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="textModal">&times;</span>
+            <h2>残文区域信息</h2>
+            <form id="textForm">
+                <div class="form-group">
+                    <label>识别文字</label>
+                    <textarea id="textContent" rows="3" placeholder="输入该区域识别出的文字..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>关联破损区域</label>
+                    <div id="linkedDamageList" class="linked-damage-list"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">确定</button>
+                    <button type="button" class="btn btn-secondary" data-close="textModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="versionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="versionModal">&times;</span>
+            <h2>创建版本快照</h2>
+            <form id="versionForm">
+                <div class="form-group">
+                    <label>版本名称</label>
+                    <input type="text" id="versionName" placeholder="例如：初始版本、修订版本1...">
+                </div>
+                <div class="form-group">
+                    <label>版本说明</label>
+                    <textarea id="versionDesc" rows="3" placeholder="描述此版本的改动..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">创建</button>
+                    <button type="button" class="btn btn-secondary" data-close="versionModal">取消</button>
+                </div>
+            </form>
         </div>
     </div>
 

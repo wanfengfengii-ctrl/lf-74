@@ -1,0 +1,61 @@
+{
+  "LF-TEST-001": {
+    "id": "LF-TEST-001",
+    "length": 480.0,
+    "width": 45.0,
+    "holes": [
+      {
+        "x": 10.0,
+        "y": 5.0
+      },
+      {
+        "x": 20.0,
+        "y": 5.0
+      }
+    ],
+    "residual_text": "residual text content",
+    "damage": "mild: edge wear",
+    "confirmed": false,
+    "image_path": "images/LF-TEST-001_7b9e914b.png",
+    "created_at": "2026-06-22T09:25:18.213554",
+    "updated_at": "2026-06-22T09:25:18.403899"
+  },
+  "LF-TEST-002": {
+    "id": "LF-TEST-002",
+    "length": 478.0,
+    "width": 44.0,
+    "holes": [
+      {
+        "x": 22.0,
+        "y": 240.0
+      }
+    ],
+    "residual_text": "test residual text 2",
+    "damage": "burn mark",
+    "confirmed": false,
+    "image_path": "",
+    "created_at": "2026-06-22T09:25:18.230263",
+    "updated_at": "2026-06-22T09:25:18.230263"
+  },
+  "LF-TEST-003": {
+    "id": "LF-TEST-003",
+    "length": 482.0,
+    "width": 46.0,
+    "holes": [
+      {
+        "x": 23.0,
+        "y": 30.0
+      },
+      {
+        "x": 23.0,
+        "y": 452.0
+      }
+    ],
+    "residual_text": "test residual text 3",
+    "damage": "good condition",
+    "confirmed": false,
+    "image_path": "",
+    "created_at": "2026-06-22T09:25:18.243845",
+    "updated_at": "2026-06-22T09:25:18.243845"
+  }
+}

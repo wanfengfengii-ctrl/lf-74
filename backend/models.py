@@ -226,3 +226,196 @@ class SortRecommendation(BaseModel):
 class SortResult(BaseModel):
     ordered_leaves: List[SortRecommendation]
     total_score: float
+
+
+class Researcher(BaseModel):
+    id: str = Field(description="研究者唯一ID")
+    name: str = Field(description="研究者姓名")
+    affiliation: str = Field(default="", description="所属机构")
+    email: str = Field(default="", description="联系邮箱")
+    expertise: str = Field(default="", description="研究领域/专长")
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+class ResearcherCreate(BaseModel):
+    id: str = Field(description="研究者唯一ID")
+    name: str = Field(description="研究者姓名")
+    affiliation: str = Field(default="")
+    email: str = Field(default="")
+    expertise: str = Field(default="")
+
+
+class ResearcherUpdate(BaseModel):
+    name: Optional[str] = None
+    affiliation: Optional[str] = None
+    email: Optional[str] = None
+    expertise: Optional[str] = None
+
+
+class AnnotationOpinion(BaseModel):
+    leaf_id: str = Field(description="叶片ID")
+    opinion_type: str = Field(description="意见类型：text(文字)/damage(破损)/hole(穿孔)/other(其他)")
+    content: str = Field(description="意见内容")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="置信度 0-1")
+    reference: str = Field(default="", description="参考依据")
+
+
+class DisputeNote(BaseModel):
+    id: str = Field(default="", description="争议记录ID")
+    leaf_id: str = Field(description="争议叶片ID")
+    dispute_type: str = Field(description="争议类型：order(排序)/annotation(标注)/classification(分类)")
+    description: str = Field(description="争议描述")
+    position: Optional[int] = Field(default=None, description="研究者认为的排序位置")
+    flipped: Optional[bool] = Field(default=None, description="研究者认为的翻面状态")
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+class ResearcherSubmission(BaseModel):
+    id: str = Field(description="提交记录ID")
+    project_id: str = Field(description="所属协同项目ID")
+    researcher_id: str = Field(description="提交者ID")
+    researcher_name: str = Field(default="", description="提交者姓名（冗余存储）")
+    ordered_leaves: List[ReconstructionLeaf] = Field(default_factory=list, description="研究者提交的叶片排序")
+    annotation_opinions: List[AnnotationOpinion] = Field(default_factory=list, description="标注意见列表")
+    dispute_notes: List[DisputeNote] = Field(default_factory=list, description="争议说明列表")
+    remarks: str = Field(default="", description="整体备注说明")
+    submitted_at: datetime = Field(default_factory=datetime.now)
+    is_final: bool = Field(default=False, description="是否为最终提交")
+
+
+class ResearcherSubmissionCreate(BaseModel):
+    project_id: str = Field(description="所属协同项目ID")
+    researcher_id: str = Field(description="提交者ID")
+    ordered_leaves: List[ReconstructionLeaf] = Field(default_factory=list)
+    annotation_opinions: List[AnnotationOpinion] = Field(default_factory=list)
+    dispute_notes: List[DisputeNote] = Field(default_factory=list)
+    remarks: str = Field(default="")
+    is_final: bool = Field(default=False)
+
+
+class CollaborationProject(BaseModel):
+    id: str = Field(description="协同项目ID")
+    name: str = Field(description="项目名称")
+    description: str = Field(default="", description="项目说明")
+    target_leaf_ids: List[str] = Field(default_factory=list, description="需要校勘的叶片ID列表")
+    researcher_ids: List[str] = Field(default_factory=list, description="参与的研究者ID列表")
+    status: str = Field(default="ongoing", description="项目状态：ongoing(进行中)/discussing(讨论中)/finalized(已完成)")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    created_by: str = Field(default="system", description="创建者")
+
+
+class CollaborationProjectCreate(BaseModel):
+    id: str = Field(description="协同项目ID")
+    name: str = Field(description="项目名称")
+    description: str = Field(default="")
+    target_leaf_ids: List[str] = Field(default_factory=list)
+    researcher_ids: List[str] = Field(default_factory=list)
+    created_by: str = Field(default="system")
+
+
+class CollaborationProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    target_leaf_ids: Optional[List[str]] = None
+    researcher_ids: Optional[List[str]] = None
+    status: Optional[str] = None
+
+
+class LeafPositionVote(BaseModel):
+    leaf_id: str = Field(description="叶片ID")
+    researcher_id: str = Field(description="研究者ID")
+    position: int = Field(description="投票的排序位置")
+    flipped: bool = Field(default=False, description="是否翻面")
+
+
+class LeafConsensus(BaseModel):
+    leaf_id: str = Field(description="叶片ID")
+    agreed_position: Optional[int] = Field(default=None, description="共识排序位置")
+    agreed_flipped: Optional[bool] = Field(default=None, description="共识翻面状态")
+    agreement_rate: float = Field(default=0.0, description="一致率 0-1")
+    total_votes: int = Field(default=0, description="总投票数")
+    position_votes: Dict[int, int] = Field(default_factory=dict, description="各位置投票数 {position: count}")
+    flipped_votes: Dict[str, int] = Field(default_factory=dict, description="翻面投票数 {'true': count, 'false': count}")
+    is_controversial: bool = Field(default=False, description="是否存在争议")
+    disputes: List[DisputeNote] = Field(default_factory=list, description="相关争议记录")
+
+
+class AnnotationConsensus(BaseModel):
+    leaf_id: str = Field(description="叶片ID")
+    opinion_type: str = Field(description="意见类型")
+    consensus_content: str = Field(default="", description="共识内容")
+    agreement_rate: float = Field(default=0.0, description="一致率")
+    total_opinions: int = Field(default=0, description="总意见数")
+    opinions_by_content: Dict[str, int] = Field(default_factory=dict, description="各内容的意见数")
+
+
+class CollaborationSummary(BaseModel):
+    project_id: str = Field(description="协同项目ID")
+    project_name: str = Field(default="", description="项目名称")
+    total_researchers: int = Field(default=0, description="参与研究者总数")
+    submitted_researchers: int = Field(default=0, description="已提交的研究者数")
+    total_leaves: int = Field(default=0, description="目标叶片总数")
+    submission_rate: float = Field(default=0.0, description="提交完成率")
+    overall_agreement_rate: float = Field(default=0.0, description="整体排序一致率")
+    leaf_consensus_list: List[LeafConsensus] = Field(default_factory=list, description="各叶片共识详情")
+    annotation_consensus_list: List[AnnotationConsensus] = Field(default_factory=list, description="标注共识详情")
+    controversial_leaf_ids: List[str] = Field(default_factory=list, description="存在争议的叶片ID列表")
+    top_disputes: List[DisputeNote] = Field(default_factory=list, description="主要争议列表")
+    calculated_at: datetime = Field(default_factory=datetime.now)
+
+
+class DiscussionMessage(BaseModel):
+    id: str = Field(description="消息ID")
+    project_id: str = Field(description="所属协同项目ID")
+    researcher_id: str = Field(description="发言者ID")
+    researcher_name: str = Field(default="", description="发言者姓名")
+    reply_to_id: Optional[str] = Field(default=None, description="回复的消息ID")
+    leaf_id: Optional[str] = Field(default=None, description="关联的叶片ID")
+    content: str = Field(description="讨论内容")
+    tags: List[str] = Field(default_factory=list, description="标签，如：排序争议/标注疑问/共识确认")
+    created_at: datetime = Field(default_factory=datetime.now)
+    is_resolved: bool = Field(default=False, description="问题是否已解决")
+    resolution_note: str = Field(default="", description="解决说明")
+
+
+class DiscussionMessageCreate(BaseModel):
+    project_id: str = Field(description="所属协同项目ID")
+    researcher_id: str = Field(description="发言者ID")
+    reply_to_id: Optional[str] = None
+    leaf_id: Optional[str] = None
+    content: str = Field(description="讨论内容")
+    tags: List[str] = Field(default_factory=list)
+
+
+class DiscussionMessageUpdate(BaseModel):
+    content: Optional[str] = None
+    tags: Optional[List[str]] = None
+    is_resolved: Optional[bool] = None
+    resolution_note: Optional[str] = None
+
+
+class ConsensusVersion(BaseModel):
+    id: str = Field(description="共识版本ID")
+    project_id: str = Field(description="所属协同项目ID")
+    version: int = Field(default=1, description="版本号")
+    name: str = Field(default="", description="版本名称")
+    description: str = Field(default="", description="版本说明")
+    ordered_leaves: List[ReconstructionLeaf] = Field(default_factory=list, description="共识排序结果")
+    consensus_notes: Dict[str, str] = Field(default_factory=dict, description="各叶片的共识说明 {leaf_id: note}")
+    unresolved_disputes: List[str] = Field(default_factory=list, description="未解决的争议叶片ID列表")
+    created_at: datetime = Field(default_factory=datetime.now)
+    created_by: str = Field(default="system", description="创建者")
+    approved_by: List[str] = Field(default_factory=list, description="批准的研究者ID列表")
+    is_final: bool = Field(default=False, description="是否为最终共识版本")
+
+
+class ConsensusVersionCreate(BaseModel):
+    project_id: str = Field(description="所属协同项目ID")
+    name: str = Field(default="")
+    description: str = Field(default="")
+    ordered_leaves: List[ReconstructionLeaf] = Field(default_factory=list)
+    consensus_notes: Dict[str, str] = Field(default_factory=dict)
+    unresolved_disputes: List[str] = Field(default_factory=list)
+    created_by: str = Field(default="system")
+    is_final: bool = Field(default=False)

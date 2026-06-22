@@ -1,0 +1,78 @@
+[
+  {
+    "id": "12f0a1ed-9d95-4c5d-846e-ff350b099449",
+    "project_id": "PROJ-001",
+    "researcher_id": "R-001",
+    "researcher_name": "张研究员",
+    "ordered_leaves": [
+      {
+        "leaf_id": "LF-BUG-001",
+        "order": 1,
+        "flipped": false,
+        "rotated": 0.0
+      },
+      {
+        "leaf_id": "LF-BUG-002",
+        "order": 2,
+        "flipped": false,
+        "rotated": 0.0
+      }
+    ],
+    "annotation_opinions": [
+      {
+        "leaf_id": "LF-BUG-001",
+        "opinion_type": "text",
+        "content": "R001-opinion",
+        "confidence": 0.9,
+        "reference": ""
+      }
+    ],
+    "dispute_notes": [
+      {
+        "id": "1b643236-f7fb-4ffa-b9e4-bd2c79a59361",
+        "leaf_id": "LF-BUG-002",
+        "dispute_type": "order",
+        "description": "R001 dispute",
+        "position": 1,
+        "flipped": false,
+        "created_at": "2026-06-22T12:47:21.532754"
+      }
+    ],
+    "remarks": "R001 remarks",
+    "submitted_at": "2026-06-22T12:47:21.535902",
+    "is_final": false
+  },
+  {
+    "id": "9cc00afc-bd35-400f-8222-36c0b2b77a77",
+    "project_id": "PROJ-001",
+    "researcher_id": "R-002",
+    "researcher_name": "李教授",
+    "ordered_leaves": [
+      {
+        "leaf_id": "LF-BUG-001",
+        "order": 1,
+        "flipped": false,
+        "rotated": 0.0
+      },
+      {
+        "leaf_id": "LF-BUG-002",
+        "order": 2,
+        "flipped": false,
+        "rotated": 0.0
+      }
+    ],
+    "annotation_opinions": [
+      {
+        "leaf_id": "LF-BUG-001",
+        "opinion_type": "text",
+        "content": "R002-agrees-opinion",
+        "confidence": 0.95,
+        "reference": ""
+      }
+    ],
+    "dispute_notes": [],
+    "remarks": "R002 remarks",
+    "submitted_at": "2026-06-22T12:47:29.626925",
+    "is_final": true
+  }
+]

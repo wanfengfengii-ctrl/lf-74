@@ -1,0 +1,18 @@
+[
+  {
+    "id": "774f2067-b819-4c41-8580-c152b369c9da",
+    "project_id": "PROJ-001",
+    "researcher_id": "R-001",
+    "researcher_name": "张研究员",
+    "reply_to_id": null,
+    "leaf_id": "LF-BUG-002",
+    "content": "关于 LF-BUG-002 是否翻面的问题，我认为应该翻面，因为穿孔位置和残文方向与 LF-BUG-001 呈镜像关系。",
+    "tags": [
+      "翻面",
+      "穿孔比对"
+    ],
+    "created_at": "2026-06-22T12:47:51.226253",
+    "is_resolved": false,
+    "resolution_note": ""
+  }
+]

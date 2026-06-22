@@ -40,6 +40,24 @@ let state = {
         selectedVersionPlanId: null,
         selectedVersionForCreate: null,
     },
+    collaboration: {
+        researchers: [],
+        projects: [],
+        submissions: [],
+        editingResearcherId: null,
+        currentProjectId: null,
+        currentProject: null,
+        submissionLeafOrder: [],
+        submissionLeafFlipped: {},
+        submissionAvailableSel: null,
+        submissionSelectedSel: null,
+        opinions: [],
+        disputes: [],
+        discussions: [],
+        consensusVersions: [],
+        summary: null,
+        currentDetailProjectId: null,
+    },
 };
 
 function uid() {
@@ -1453,6 +1471,1037 @@ async function exportVersionsReport() {
     downloadText(result.report, `plan_versions_${pid}.txt`);
 }
 
+function initCollabSubtabs() {
+    document.querySelectorAll(".collab-tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const tabId = btn.dataset.collabTab;
+            document.querySelectorAll(".collab-tab-btn").forEach((b) => b.classList.remove("active"));
+            document.querySelectorAll(".collab-tab-content").forEach((c) => c.classList.remove("active"));
+            btn.classList.add("active");
+            document.getElementById(`collab-${tabId}`).classList.add("active");
+            if (tabId === "researchers") loadResearchers();
+            if (tabId === "projects") loadCollabProjects();
+            if (tabId === "submission") {
+                populateSubmissionProjectSelect();
+                populateSubmissionResearcherSelect();
+            }
+            if (tabId === "summary") populateSummaryProjectSelect();
+            if (tabId === "discussions") {
+                populateDiscussionProjectSelect();
+                populateDiscussionResearcherSelect();
+            }
+            if (tabId === "consensus") populateConsensusProjectSelect();
+        });
+    });
+}
+
+async function loadResearchers() {
+    state.collaboration.researchers = await apiRequest(`${API_BASE}/collaboration/researchers`);
+    renderResearchers();
+}
+
+function renderResearchers() {
+    const container = document.getElementById("researchersList");
+    if (state.collaboration.researchers.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无研究者，点击右上角按钮添加</div>';
+        return;
+    }
+    container.innerHTML = state.collaboration.researchers
+        .map(
+            (r) => `
+        <div class="researcher-card">
+            <div class="researcher-card-header">
+                <span class="researcher-name">${escapeHtml(r.name)}</span>
+                <span class="researcher-id">#${escapeHtml(r.id)}</span>
+            </div>
+            ${r.affiliation ? `<div class="researcher-affiliation">🏛 ${escapeHtml(r.affiliation)}</div>` : ""}
+            ${r.email ? `<div class="researcher-email">✉ ${escapeHtml(r.email)}</div>` : ""}
+            ${r.expertise ? `<div class="researcher-expertise">🔬 ${escapeHtml(r.expertise)}</div>` : ""}
+            <div class="researcher-card-actions">
+                <button class="btn btn-secondary" onclick="editResearcher('${r.id}')">编辑</button>
+                <button class="btn btn-danger" onclick="deleteResearcher('${r.id}')">删除</button>
+            </div>
+        </div>
+    `
+        )
+        .join("");
+}
+
+function openAddResearcherModal() {
+    state.collaboration.editingResearcherId = null;
+    document.getElementById("researcherModalTitle").textContent = "添加研究者";
+    document.getElementById("researcherForm").reset();
+    document.getElementById("researcherId").disabled = false;
+    openModal("researcherModal");
+}
+
+function editResearcher(researcherId) {
+    const r = state.collaboration.researchers.find((x) => x.id === researcherId);
+    if (!r) return;
+    state.collaboration.editingResearcherId = researcherId;
+    document.getElementById("researcherModalTitle").textContent = "编辑研究者";
+    document.getElementById("researcherId").value = r.id;
+    document.getElementById("researcherId").disabled = true;
+    document.getElementById("researcherName").value = r.name;
+    document.getElementById("researcherAffiliation").value = r.affiliation || "";
+    document.getElementById("researcherEmail").value = r.email || "";
+    document.getElementById("researcherExpertise").value = r.expertise || "";
+    openModal("researcherModal");
+}
+
+async function submitResearcherForm(e) {
+    e.preventDefault();
+    const payload = {
+        name: document.getElementById("researcherName").value.trim(),
+        affiliation: document.getElementById("researcherAffiliation").value.trim(),
+        email: document.getElementById("researcherEmail").value.trim(),
+        expertise: document.getElementById("researcherExpertise").value.trim(),
+    };
+    if (state.collaboration.editingResearcherId) {
+        await apiRequest(`${API_BASE}/collaboration/researchers/${state.collaboration.editingResearcherId}`, {
+            method: "PUT",
+            body: JSON.stringify(payload),
+        });
+        showToast("研究者信息已更新");
+    } else {
+        payload.id = document.getElementById("researcherId").value.trim();
+        await apiRequest(`${API_BASE}/collaboration/researchers`, {
+            method: "POST",
+            body: JSON.stringify(payload),
+        });
+        showToast("研究者已添加");
+    }
+    closeModal("researcherModal");
+    await loadResearchers();
+}
+
+async function deleteResearcher(researcherId) {
+    if (!confirm(`确定要删除研究者 "${researcherId}" 吗？`)) return;
+    await apiRequest(`${API_BASE}/collaboration/researchers/${researcherId}`, { method: "DELETE" });
+    showToast("研究者已删除");
+    await loadResearchers();
+}
+
+async function loadCollabProjects() {
+    state.collaboration.projects = await apiRequest(`${API_BASE}/collaboration/projects`);
+    renderCollabProjects();
+}
+
+function renderCollabProjects() {
+    const container = document.getElementById("projectsList");
+    if (state.collaboration.projects.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无协同项目，点击右上角按钮新建</div>';
+        return;
+    }
+    const statusLabels = {
+        ongoing: "进行中",
+        discussing: "讨论中",
+        finalized: "已完成",
+    };
+    container.innerHTML = state.collaboration.projects
+        .map(
+            (p) => `
+        <div class="project-card" onclick="viewProjectDetail('${p.id}')">
+            <div class="project-card-header">
+                <span class="project-name">${escapeHtml(p.name)}</span>
+                <span class="project-status status-${p.status}">${statusLabels[p.status] || p.status}</span>
+            </div>
+            <div class="project-id">项目编号：${escapeHtml(p.id)}</div>
+            ${p.description ? `<div class="project-desc">${escapeHtml(p.description)}</div>` : ""}
+            <div class="project-meta">
+                <span>目标叶片 ${p.target_leaf_ids.length} 片</span>
+                <span>研究者 ${p.researcher_ids.length} 人</span>
+            </div>
+        </div>
+    `
+        )
+        .join("");
+}
+
+async function openAddProjectModal() {
+    state.collaboration.editingResearcherId = null;
+    document.getElementById("projectModalTitle").textContent = "新建协同项目";
+    document.getElementById("projectForm").reset();
+    document.getElementById("projectId").disabled = false;
+    renderProjectMultiSelects();
+    openModal("projectModal");
+}
+
+function renderProjectMultiSelects() {
+    const leafContainer = document.getElementById("projectLeafList");
+    leafContainer.innerHTML =
+        state.leaves.length === 0
+            ? '<div class="empty-state-inline">暂无叶片</div>'
+            : state.leaves
+                  .map(
+                      (l) => `
+        <label class="multi-select-item">
+            <input type="checkbox" value="${l.id}" data-project-leaf>
+            <strong>${escapeHtml(l.id)}</strong>
+            <small>${l.length}×${l.width}mm · ${l.holes.length}孔</small>
+        </label>
+    `
+                  )
+                  .join("");
+
+    const researcherContainer = document.getElementById("projectResearcherList");
+    researcherContainer.innerHTML =
+        state.collaboration.researchers.length === 0
+            ? '<div class="empty-state-inline">暂无研究者，请先添加</div>'
+            : state.collaboration.researchers
+                  .map(
+                      (r) => `
+        <label class="multi-select-item">
+            <input type="checkbox" value="${r.id}" data-project-researcher>
+            <strong>${escapeHtml(r.name)}</strong>
+            <small>#${escapeHtml(r.id)}${r.affiliation ? ` · ${escapeHtml(r.affiliation)}` : ""}</small>
+        </label>
+    `
+                  )
+                  .join("");
+}
+
+async function submitProjectForm(e) {
+    e.preventDefault();
+    const target_leaf_ids = [];
+    document.querySelectorAll("[data-project-leaf]").forEach((cb) => {
+        if (cb.checked) target_leaf_ids.push(cb.value);
+    });
+    const researcher_ids = [];
+    document.querySelectorAll("[data-project-researcher]").forEach((cb) => {
+        if (cb.checked) researcher_ids.push(cb.value);
+    });
+    if (target_leaf_ids.length === 0) {
+        showToast("请至少选择一片目标叶片", "error");
+        return;
+    }
+    if (researcher_ids.length === 0) {
+        showToast("请至少选择一位参与研究者", "error");
+        return;
+    }
+    const payload = {
+        name: document.getElementById("projectName").value.trim(),
+        description: document.getElementById("projectDescription").value.trim(),
+        target_leaf_ids,
+        researcher_ids,
+        created_by: document.getElementById("projectCreatedBy").value.trim() || "system",
+    };
+    payload.id = document.getElementById("projectId").value.trim();
+    await apiRequest(`${API_BASE}/collaboration/projects`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+    showToast("协同项目已创建");
+    closeModal("projectModal");
+    await loadCollabProjects();
+}
+
+async function viewProjectDetail(projectId) {
+    const p = state.collaboration.projects.find((x) => x.id === projectId);
+    if (!p) return;
+    state.collaboration.currentDetailProjectId = projectId;
+    document.getElementById("projectDetailTitle").textContent = p.name;
+
+    const statusLabels = { ongoing: "🔄 进行中", discussing: "💬 讨论中", finalized: "✅ 已完成" };
+    const researchers = state.collaboration.researchers.filter((r) => p.researcher_ids.includes(r.id));
+    const leaves = state.leaves.filter((l) => p.target_leaf_ids.includes(l.id));
+
+    document.getElementById("projectDetailContent").innerHTML = `
+        <div class="project-detail-meta">
+            <p><strong>项目编号：</strong>${escapeHtml(p.id)}</p>
+            ${p.description ? `<p><strong>项目说明：</strong>${escapeHtml(p.description)}</p>` : ""}
+            <p><strong>状态：</strong>${statusLabels[p.status] || p.status}</p>
+            <p><strong>创建时间：</strong>${new Date(p.created_at).toLocaleString("zh-CN")}</p>
+            <p><strong>更新时间：</strong>${new Date(p.updated_at).toLocaleString("zh-CN")}</p>
+        </div>
+        <h4 style="margin:16px 0 8px; color:#6b4423;">参与研究者（${researchers.length}人）</h4>
+        <div class="project-detail-list">
+            ${researchers
+                .map((r) => `<div class="project-detail-chip">${escapeHtml(r.name)}<small>· #${escapeHtml(r.id)}</small></div>`)
+                .join("") || '<span class="empty-state-inline">暂无</span>'}
+        </div>
+        <h4 style="margin:16px 0 8px; color:#6b4423;">目标叶片（${leaves.length}片）</h4>
+        <div class="project-detail-list">
+            ${leaves
+                .map((l) => `<div class="project-detail-chip">${escapeHtml(l.id)}<small>· ${l.length}×${l.width}mm</small></div>`)
+                .join("") || '<span class="empty-state-inline">暂无</span>'}
+        </div>
+    `;
+    openModal("projectDetailModal");
+}
+
+async function deleteCurrentProject() {
+    const pid = state.collaboration.currentDetailProjectId;
+    if (!pid) return;
+    if (!confirm("确定要删除该协同项目吗？")) return;
+    await apiRequest(`${API_BASE}/collaboration/projects/${pid}`, { method: "DELETE" });
+    showToast("项目已删除");
+    closeModal("projectDetailModal");
+    await loadCollabProjects();
+}
+
+async function viewCurrentProjectSubmissions() {
+    const pid = state.collaboration.currentDetailProjectId;
+    if (!pid) return;
+    document.querySelectorAll(".collab-tab-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".collab-tab-content").forEach((c) => c.classList.remove("active"));
+    document.querySelector('.collab-tab-btn[data-collab-tab="summary"]').classList.add("active");
+    document.getElementById("collab-summary").classList.add("active");
+    closeModal("projectDetailModal");
+    await populateSummaryProjectSelect();
+    document.getElementById("summaryProjectSelect").value = pid;
+    await loadSummary();
+}
+
+function populateSubmissionProjectSelect() {
+    const select = document.getElementById("submissionProjectSelect");
+    const current = select.value;
+    select.innerHTML = '<option value="">请先选择协同项目</option>';
+    state.collaboration.projects.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.target_leaf_ids.length}片·${p.researcher_ids.length}人)`;
+        select.appendChild(opt);
+    });
+    if (current && state.collaboration.projects.some((p) => p.id === current)) select.value = current;
+}
+
+function populateSubmissionResearcherSelect() {
+    const select = document.getElementById("submissionResearcherSelect");
+    const current = select.value;
+    select.innerHTML = '<option value="">请先选择研究者</option>';
+    state.collaboration.researchers.forEach((r) => {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = `${r.name} (#${r.id})`;
+        select.appendChild(opt);
+    });
+    if (current && state.collaboration.researchers.some((r) => r.id === current)) select.value = current;
+}
+
+async function loadSubmissionProject() {
+    const pid = document.getElementById("submissionProjectSelect").value;
+    const rid = document.getElementById("submissionResearcherSelect").value;
+    if (!pid) {
+        showToast("请选择协同项目", "error");
+        return;
+    }
+    if (!rid) {
+        showToast("请选择研究者", "error");
+        return;
+    }
+    const project = state.collaboration.projects.find((p) => p.id === pid);
+    if (!project) return;
+    if (!project.researcher_ids.includes(rid)) {
+        showToast("该研究者未参与此项目", "error");
+        return;
+    }
+    state.collaboration.currentProjectId = pid;
+    state.collaboration.currentProject = project;
+    state.collaboration.submissionLeafOrder = [];
+    state.collaboration.submissionLeafFlipped = {};
+    state.collaboration.submissionAvailableSel = null;
+    state.collaboration.submissionSelectedSel = null;
+    state.collaboration.opinions = [];
+    state.collaboration.disputes = [];
+    document.getElementById("submissionArea").style.display = "block";
+    renderSubmissionLeafLists();
+    populateSubmissionLeafSelects();
+    renderOpinionsList();
+    renderDisputesList();
+    document.getElementById("submissionRemarks").value = "";
+    document.getElementById("submissionFinal").checked = false;
+}
+
+function renderSubmissionLeafLists() {
+    const project = state.collaboration.currentProject;
+    if (!project) return;
+    const targetSet = new Set(project.target_leaf_ids);
+    const availableContainer = document.getElementById("submissionAvailableLeaves");
+    const selectedContainer = document.getElementById("submissionSelectedLeaves");
+
+    const selectedIds = new Set(state.collaboration.submissionLeafOrder);
+    const available = state.leaves.filter((l) => targetSet.has(l.id) && !selectedIds.has(l.id));
+
+    availableContainer.innerHTML =
+        available.length === 0
+            ? '<div class="empty-state" style="padding:15px;">无待排叶片</div>'
+            : available
+                  .map(
+                      (l) => `
+        <div class="leaf-select-item ${state.collaboration.submissionAvailableSel === l.id ? "selected" : ""}"
+             onclick="selectSubmissionAvailable('${l.id}')">
+            <strong>${escapeHtml(l.id)}</strong>
+            ${l.residual_text ? `<br><small>${escapeHtml(l.residual_text.substring(0, 25))}</small>` : ""}
+        </div>
+    `
+                  )
+                  .join("");
+
+    selectedContainer.innerHTML =
+        state.collaboration.submissionLeafOrder.length === 0
+            ? '<div class="empty-state" style="padding:15px;">请从左侧选择叶片</div>'
+            : state.collaboration.submissionLeafOrder
+                  .map((lid, idx) => {
+                      const l = state.leaves.find((x) => x.id === lid);
+                      if (!l) return "";
+                      const flipped = !!state.collaboration.submissionLeafFlipped[lid];
+                      return `
+        <div class="leaf-select-item ${state.collaboration.submissionSelectedSel === lid ? "selected" : ""}"
+             onclick="selectSubmissionSelected('${lid}')">
+            <div>[${idx + 1}] <strong>${escapeHtml(lid)}</strong></div>
+            ${l.residual_text ? `<small>${escapeHtml(l.residual_text.substring(0, 25))}</small>` : ""}
+            <div class="submission-flip-control">
+                <label>
+                    <input type="checkbox" ${flipped ? "checked" : ""} onclick="event.stopPropagation(); toggleSubmissionFlip('${lid}', this.checked)">
+                    翻面
+                </label>
+            </div>
+        </div>
+    `;
+                  })
+                  .join("");
+}
+
+function selectSubmissionAvailable(id) {
+    state.collaboration.submissionAvailableSel =
+        state.collaboration.submissionAvailableSel === id ? null : id;
+    state.collaboration.submissionSelectedSel = null;
+    renderSubmissionLeafLists();
+}
+
+function selectSubmissionSelected(id) {
+    state.collaboration.submissionSelectedSel =
+        state.collaboration.submissionSelectedSel === id ? null : id;
+    state.collaboration.submissionAvailableSel = null;
+    renderSubmissionLeafLists();
+}
+
+function toggleSubmissionFlip(lid, checked) {
+    state.collaboration.submissionLeafFlipped[lid] = checked;
+}
+
+function addLeafToSubmission() {
+    if (!state.collaboration.submissionAvailableSel) return;
+    state.collaboration.submissionLeafOrder.push(state.collaboration.submissionAvailableSel);
+    state.collaboration.submissionAvailableSel = null;
+    renderSubmissionLeafLists();
+}
+
+function removeLeafFromSubmission() {
+    if (!state.collaboration.submissionSelectedSel) return;
+    const idx = state.collaboration.submissionLeafOrder.indexOf(state.collaboration.submissionSelectedSel);
+    if (idx >= 0) state.collaboration.submissionLeafOrder.splice(idx, 1);
+    delete state.collaboration.submissionLeafFlipped[state.collaboration.submissionSelectedSel];
+    state.collaboration.submissionSelectedSel = null;
+    renderSubmissionLeafLists();
+}
+
+function submissionLeafMoveUp() {
+    if (!state.collaboration.submissionSelectedSel) return;
+    const idx = state.collaboration.submissionLeafOrder.indexOf(state.collaboration.submissionSelectedSel);
+    if (idx > 0) {
+        [state.collaboration.submissionLeafOrder[idx - 1], state.collaboration.submissionLeafOrder[idx]] = [
+            state.collaboration.submissionLeafOrder[idx],
+            state.collaboration.submissionLeafOrder[idx - 1],
+        ];
+        renderSubmissionLeafLists();
+    }
+}
+
+function submissionLeafMoveDown() {
+    if (!state.collaboration.submissionSelectedSel) return;
+    const idx = state.collaboration.submissionLeafOrder.indexOf(state.collaboration.submissionSelectedSel);
+    if (idx < state.collaboration.submissionLeafOrder.length - 1) {
+        [state.collaboration.submissionLeafOrder[idx + 1], state.collaboration.submissionLeafOrder[idx]] = [
+            state.collaboration.submissionLeafOrder[idx],
+            state.collaboration.submissionLeafOrder[idx + 1],
+        ];
+        renderSubmissionLeafLists();
+    }
+}
+
+function populateSubmissionLeafSelects() {
+    const project = state.collaboration.currentProject;
+    if (!project) return;
+    ["opinionLeafSelect", "disputeLeafSelect", "discussionLeafSelect"].forEach((id) => {
+        const select = document.getElementById(id);
+        if (!select) return;
+        select.innerHTML = id === "discussionLeafSelect" ? '<option value="">（可选）</option>' : '<option value="">选择叶片</option>';
+        project.target_leaf_ids.forEach((lid) => {
+            const opt = document.createElement("option");
+            opt.value = lid;
+            opt.textContent = lid;
+            select.appendChild(opt);
+        });
+    });
+}
+
+function initSubmissionControls() {
+    document.getElementById("opinionConfidence").addEventListener("input", (e) => {
+        document.getElementById("opinionConfidenceVal").textContent = e.target.value;
+    });
+}
+
+function addOpinion() {
+    const leaf_id = document.getElementById("opinionLeafSelect").value;
+    const opinion_type = document.getElementById("opinionTypeSelect").value;
+    const content = document.getElementById("opinionContent").value.trim();
+    const confidence = parseFloat(document.getElementById("opinionConfidence").value);
+    const reference = document.getElementById("opinionReference").value.trim();
+    if (!leaf_id) {
+        showToast("请选择叶片", "error");
+        return;
+    }
+    if (!content) {
+        showToast("请输入意见内容", "error");
+        return;
+    }
+    state.collaboration.opinions.push({
+        leaf_id,
+        opinion_type,
+        content,
+        confidence,
+        reference,
+    });
+    document.getElementById("opinionContent").value = "";
+    document.getElementById("opinionReference").value = "";
+    renderOpinionsList();
+    showToast("意见已添加");
+}
+
+function renderOpinionsList() {
+    const container = document.getElementById("opinionsList");
+    const typeLabels = { text: "文字", damage: "破损", hole: "穿孔", other: "其他" };
+    if (state.collaboration.opinions.length === 0) {
+        container.innerHTML = '<div class="empty-state-inline">暂无标注意见</div>';
+        return;
+    }
+    container.innerHTML = state.collaboration.opinions
+        .map(
+            (op, idx) => `
+        <div class="opinion-item">
+            <div class="opinion-header">
+                <span class="opinion-tag opinion-${op.opinion_type}">${typeLabels[op.opinion_type] || op.opinion_type}</span>
+                <span class="opinion-leaf">${escapeHtml(op.leaf_id)}</span>
+                <span class="opinion-conf">置信度 ${(op.confidence * 100).toFixed(0)}%</span>
+                <button class="annotation-item-delete" onclick="removeOpinion(${idx})">×</button>
+            </div>
+            <div class="opinion-content">${escapeHtml(op.content)}</div>
+            ${op.reference ? `<div class="opinion-ref">参考：${escapeHtml(op.reference)}</div>` : ""}
+        </div>
+    `
+        )
+        .join("");
+}
+
+function removeOpinion(idx) {
+    state.collaboration.opinions.splice(idx, 1);
+    renderOpinionsList();
+}
+
+function addDispute() {
+    const leaf_id = document.getElementById("disputeLeafSelect").value;
+    const dispute_type = document.getElementById("disputeTypeSelect").value;
+    const description = document.getElementById("disputeDescription").value.trim();
+    const positionVal = document.getElementById("disputePosition").value;
+    const position = positionVal !== "" ? parseInt(positionVal) : null;
+    const flipped = document.getElementById("disputeFlipped").checked;
+    if (!leaf_id) {
+        showToast("请选择争议叶片", "error");
+        return;
+    }
+    if (!description) {
+        showToast("请输入争议描述", "error");
+        return;
+    }
+    state.collaboration.disputes.push({
+        id: uid(),
+        leaf_id,
+        dispute_type,
+        description,
+        position,
+        flipped,
+    });
+    document.getElementById("disputeDescription").value = "";
+    document.getElementById("disputePosition").value = "";
+    document.getElementById("disputeFlipped").checked = false;
+    renderDisputesList();
+    showToast("争议说明已添加");
+}
+
+function renderDisputesList() {
+    const container = document.getElementById("disputesList");
+    const typeLabels = { order: "排序", annotation: "标注", classification: "分类" };
+    if (state.collaboration.disputes.length === 0) {
+        container.innerHTML = '<div class="empty-state-inline">暂无争议说明</div>';
+        return;
+    }
+    container.innerHTML = state.collaboration.disputes
+        .map(
+            (d, idx) => `
+        <div class="dispute-item">
+            <div class="dispute-header">
+                <span class="dispute-tag">${typeLabels[d.dispute_type] || d.dispute_type}</span>
+                <span class="dispute-leaf">${escapeHtml(d.leaf_id)}</span>
+                ${d.position !== null && d.position !== undefined ? `<span>位置#${d.position + 1}</span>` : ""}
+                ${d.flipped ? '<span>应翻面</span>' : ""}
+                <button class="annotation-item-delete" onclick="removeDispute(${idx})">×</button>
+            </div>
+            <div class="dispute-desc">${escapeHtml(d.description)}</div>
+        </div>
+    `
+        )
+        .join("");
+}
+
+function removeDispute(idx) {
+    state.collaboration.disputes.splice(idx, 1);
+    renderDisputesList();
+}
+
+async function submitCollabResult() {
+    const pid = state.collaboration.currentProjectId;
+    const rid = document.getElementById("submissionResearcherSelect").value;
+    if (!pid || !rid) return;
+    if (state.collaboration.submissionLeafOrder.length === 0) {
+        showToast("请至少排一片叶片", "error");
+        return;
+    }
+    const ordered_leaves = state.collaboration.submissionLeafOrder.map((lid, idx) => ({
+        leaf_id: lid,
+        order: idx,
+        flipped: !!state.collaboration.submissionLeafFlipped[lid],
+        rotated: 0.0,
+    }));
+    const payload = {
+        project_id: pid,
+        researcher_id: rid,
+        ordered_leaves,
+        annotation_opinions: state.collaboration.opinions,
+        dispute_notes: state.collaboration.disputes,
+        remarks: document.getElementById("submissionRemarks").value.trim(),
+        is_final: document.getElementById("submissionFinal").checked,
+    };
+    await apiRequest(`${API_BASE}/collaboration/submissions`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+    showToast("校勘结果已提交");
+    state.collaboration.submissionLeafOrder = [];
+    state.collaboration.submissionLeafFlipped = {};
+    state.collaboration.opinions = [];
+    state.collaboration.disputes = [];
+    document.getElementById("submissionRemarks").value = "";
+    document.getElementById("submissionFinal").checked = false;
+    renderSubmissionLeafLists();
+    renderOpinionsList();
+    renderDisputesList();
+}
+
+function populateSummaryProjectSelect() {
+    const select = document.getElementById("summaryProjectSelect");
+    const current = select.value;
+    select.innerHTML = '<option value="">请选择协同项目</option>';
+    state.collaboration.projects.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.id})`;
+        select.appendChild(opt);
+    });
+    if (current && state.collaboration.projects.some((p) => p.id === current)) select.value = current;
+}
+
+async function loadSummary() {
+    const pid = document.getElementById("summaryProjectSelect").value;
+    if (!pid) {
+        showToast("请选择协同项目", "error");
+        return;
+    }
+    const summary = await apiRequest(`${API_BASE}/collaboration/projects/${encodeURIComponent(pid)}/summary`);
+    state.collaboration.summary = summary;
+    renderSummary(summary);
+}
+
+function renderSummary(s) {
+    const container = document.getElementById("summaryResult");
+    const submissionPct = (s.submission_rate * 100).toFixed(0);
+    const agreePct = (s.overall_agreement_rate * 100).toFixed(0);
+
+    const consensusHtml = s.leaf_consensus_list
+        .map((lc) => {
+            const rate = (lc.agreement_rate * 100).toFixed(0);
+            const rateColor = lc.agreement_rate >= 0.8 ? "#27ae60" : lc.agreement_rate >= 0.5 ? "#f39c12" : "#c0392b";
+            const positionStr = lc.agreed_position !== null && lc.agreed_position !== undefined ? `#${lc.agreed_position + 1}` : "未确定";
+            const flippedStr = lc.agreed_flipped === null || lc.agreed_flipped === undefined ? "?" : lc.agreed_flipped ? "翻面" : "正";
+            const disputesHtml =
+                lc.disputes.length > 0
+                    ? lc.disputes
+                          .map((d) => `<div class="summary-dispute-note">⚠ ${escapeHtml(d.description)}</div>`)
+                          .join("")
+                    : "";
+            const votesHtml = Object.entries(lc.position_votes || {})
+                .map(([pos, cnt]) => `<span class="vote-chip">位置${parseInt(pos) + 1}:${cnt}票</span>`)
+                .join("");
+            return `
+        <div class="consensus-item ${lc.is_controversial ? "controversial" : ""}">
+            <div class="consensus-header">
+                <strong class="consensus-leaf">${escapeHtml(lc.leaf_id)}</strong>
+                ${lc.is_controversial ? '<span class="badge-danger">存在争议</span>' : ""}
+                <span style="margin-left:auto;">投票 ${lc.total_votes}人</span>
+            </div>
+            <div class="consensus-body">
+                <div class="consensus-row">
+                    <span>共识位置：<strong>${positionStr}</strong></span>
+                    <span>共识翻面：<strong>${flippedStr}</strong></span>
+                </div>
+                <div class="agreement-bar">
+                    <div class="agreement-fill" style="width:${rate}%; background:${rateColor};"></div>
+                </div>
+                <div class="consensus-agreement" style="color:${rateColor};">一致率 ${rate}%</div>
+                ${votesHtml ? `<div class="vote-chips">${votesHtml}</div>` : ""}
+                ${disputesHtml}
+            </div>
+        </div>
+    `;
+        })
+        .join("");
+
+    const annotConsensusHtml =
+        s.annotation_consensus_list.length > 0
+            ? s.annotation_consensus_list
+                  .map((ac) => {
+                      const rate = (ac.agreement_rate * 100).toFixed(0);
+                      const opinionsHtml = Object.entries(ac.opinions_by_content || {})
+                          .map(([c, n]) => `<div style="font-size:12px; padding:2px 0;">“${escapeHtml(c)}” — ${n}人</div>`)
+                          .join("");
+                      return `
+            <div class="annot-consensus-item">
+                <div style="font-weight:600;">${escapeHtml(ac.leaf_id)} · ${ac.opinion_type} · 一致率 ${rate}%</div>
+                <div style="margin-top:4px; color:#2c3e50;">共识：${escapeHtml(ac.consensus_content)}</div>
+                <div style="margin-top:4px;">${opinionsHtml}</div>
+            </div>
+        `;
+                  })
+                  .join("")
+            : '<div class="empty-state-inline">暂无标注共识数据</div>';
+
+    container.innerHTML = `
+        <div class="summary-stats-grid">
+            <div class="stat-card">
+                <div class="stat-num">${s.submitted_researchers}/${s.total_researchers}</div>
+                <div class="stat-label">已提交研究者</div>
+                <div class="stat-pct">${submissionPct}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">${s.total_leaves}</div>
+                <div class="stat-label">目标叶片总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color:${s.overall_agreement_rate >= 0.7 ? "#27ae60" : s.overall_agreement_rate >= 0.5 ? "#f39c12" : "#c0392b"};">${agreePct}%</div>
+                <div class="stat-label">整体排序一致率</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color:${s.controversial_leaf_ids.length > 0 ? "#c0392b" : "#27ae60"};">${s.controversial_leaf_ids.length}</div>
+                <div class="stat-label">争议叶片数</div>
+            </div>
+        </div>
+        ${s.controversial_leaf_ids.length ? `<div class="badge-danger-big">⚠ 存在争议叶片：${s.controversial_leaf_ids.join("、")}</div>` : ""}
+        <h3 style="margin:20px 0 10px; color:#6b4423;">叶片排序共识详情</h3>
+        <div class="consensus-list">${consensusHtml || '<div class="empty-state-inline">暂无提交数据</div>'}</div>
+        <h3 style="margin:20px 0 10px; color:#6b4423;">标注意见共识</h3>
+        <div class="annot-consensus-list">${annotConsensusHtml}</div>
+        <div style="text-align:right; font-size:12px; color:#8b7355; margin-top:16px;">统计时间：${new Date(s.calculated_at).toLocaleString("zh-CN")}</div>
+    `;
+}
+
+function populateDiscussionProjectSelect() {
+    const select = document.getElementById("discussionProjectSelect");
+    const current = select.value;
+    select.innerHTML = '<option value="">请选择协同项目</option>';
+    state.collaboration.projects.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.id})`;
+        select.appendChild(opt);
+    });
+    if (current && state.collaboration.projects.some((p) => p.id === current)) select.value = current;
+}
+
+function populateDiscussionResearcherSelect() {
+    const select = document.getElementById("discussionResearcherSelect");
+    const current = select.value;
+    select.innerHTML = '<option value="">选择研究者</option>';
+    state.collaboration.researchers.forEach((r) => {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = `${r.name} (#${r.id})`;
+        select.appendChild(opt);
+    });
+    if (current && state.collaboration.researchers.some((r) => r.id === current)) select.value = current;
+}
+
+async function loadDiscussions() {
+    const pid = document.getElementById("discussionProjectSelect").value;
+    if (!pid) {
+        showToast("请选择协同项目", "error");
+        return;
+    }
+    state.collaboration.discussions = await apiRequest(`${API_BASE}/collaboration/projects/${encodeURIComponent(pid)}/discussions`);
+    const project = state.collaboration.projects.find((p) => p.id === pid);
+    if (project) {
+        const leafSelect = document.getElementById("discussionLeafSelect");
+        leafSelect.innerHTML = '<option value="">（可选）</option>';
+        project.target_leaf_ids.forEach((lid) => {
+            const opt = document.createElement("option");
+            opt.value = lid;
+            opt.textContent = lid;
+            leafSelect.appendChild(opt);
+        });
+    }
+    document.getElementById("discussionArea").style.display = "block";
+    renderDiscussions();
+}
+
+function renderDiscussions() {
+    const container = document.getElementById("discussionsList");
+    if (state.collaboration.discussions.length === 0) {
+        container.innerHTML = '<div class="empty-state-inline">暂无讨论，上方发表第一条</div>';
+        return;
+    }
+    container.innerHTML = state.collaboration.discussions
+        .map(
+            (m) => {
+                const time = new Date(m.created_at).toLocaleString("zh-CN");
+                const tagsHtml =
+                    m.tags && m.tags.length > 0
+                        ? m.tags.map((t) => `<span class="disc-tag">${escapeHtml(t)}</span>`).join("")
+                        : "";
+                return `
+        <div class="discussion-item">
+            <div class="discussion-header">
+                <strong class="disc-user">${escapeHtml(m.researcher_name || m.researcher_id)}</strong>
+                ${m.leaf_id ? `<span class="disc-leaf">关联: ${escapeHtml(m.leaf_id)}</span>` : ""}
+                ${m.is_resolved ? '<span class="disc-resolved">✅ 已解决</span>' : ""}
+                <span class="disc-time">${time}</span>
+            </div>
+            ${tagsHtml ? `<div class="disc-tags">${tagsHtml}</div>` : ""}
+            <div class="disc-content">${escapeHtml(m.content)}</div>
+            ${m.resolution_note ? `<div class="disc-resolution">解决说明：${escapeHtml(m.resolution_note)}</div>` : ""}
+            <div class="disc-actions">
+                <button class="btn btn-xs" onclick="toggleDiscResolved('${m.id}')">${m.is_resolved ? "标记未解决" : "标记已解决"}</button>
+                <button class="btn btn-xs btn-danger" onclick="deleteDiscMsg('${m.id}')">删除</button>
+            </div>
+        </div>
+    `;
+            }
+        )
+        .join("");
+}
+
+async function postDiscussion() {
+    const pid = document.getElementById("discussionProjectSelect").value;
+    const rid = document.getElementById("discussionResearcherSelect").value;
+    const content = document.getElementById("discussionContent").value.trim();
+    const tagsRaw = document.getElementById("discussionTags").value.trim();
+    const leaf_id = document.getElementById("discussionLeafSelect").value || null;
+    if (!pid || !rid) {
+        showToast("请选择项目和研究者", "error");
+        return;
+    }
+    if (!content) {
+        showToast("请输入讨论内容", "error");
+        return;
+    }
+    const tags = tagsRaw
+        ? tagsRaw
+              .split(/[,，]/)
+              .map((t) => t.trim())
+              .filter((t) => t)
+        : [];
+    const payload = {
+        project_id: pid,
+        researcher_id: rid,
+        leaf_id,
+        content,
+        tags,
+    };
+    await apiRequest(`${API_BASE}/collaboration/discussions`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+    document.getElementById("discussionContent").value = "";
+    document.getElementById("discussionTags").value = "";
+    showToast("讨论已发布");
+    await loadDiscussions();
+}
+
+async function toggleDiscResolved(msgId) {
+    const msg = state.collaboration.discussions.find((m) => m.id === msgId);
+    if (!msg) return;
+    const payload = { is_resolved: !msg.is_resolved };
+    await apiRequest(`${API_BASE}/collaboration/discussions/${encodeURIComponent(msgId)}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+    });
+    await loadDiscussions();
+}
+
+async function deleteDiscMsg(msgId) {
+    if (!confirm("确定要删除这条讨论消息吗？")) return;
+    await apiRequest(`${API_BASE}/collaboration/discussions/${encodeURIComponent(msgId)}`, {
+        method: "DELETE",
+    });
+    showToast("消息已删除");
+    await loadDiscussions();
+}
+
+function populateConsensusProjectSelect() {
+    const select = document.getElementById("consensusProjectSelect");
+    const current = select.value;
+    select.innerHTML = '<option value="">请选择协同项目</option>';
+    state.collaboration.projects.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.id})`;
+        select.appendChild(opt);
+    });
+    if (current && state.collaboration.projects.some((p) => p.id === current)) select.value = current;
+}
+
+async function loadConsensusVersions() {
+    const pid = document.getElementById("consensusProjectSelect").value;
+    if (!pid) {
+        showToast("请选择协同项目", "error");
+        return;
+    }
+    state.collaboration.consensusVersions = await apiRequest(
+        `${API_BASE}/collaboration/projects/${encodeURIComponent(pid)}/consensus-versions`
+    );
+    renderConsensusVersions();
+}
+
+function renderConsensusVersions() {
+    const container = document.getElementById("consensusResult");
+    if (state.collaboration.consensusVersions.length === 0) {
+        container.innerHTML =
+            '<div class="empty-state">暂无共识版本，点击上方"自动生成共识"从提交结果创建</div>';
+        return;
+    }
+    const project = state.collaboration.projects.find(
+        (p) => p.id === document.getElementById("consensusProjectSelect").value
+    );
+    const researchersMap = {};
+    state.collaboration.researchers.forEach((r) => (researchersMap[r.id] = r));
+    container.innerHTML = state.collaboration.consensusVersions
+        .map((v) => {
+            const time = new Date(v.created_at).toLocaleString("zh-CN");
+            const approvers = v.approved_by
+                .map((id) => (researchersMap[id] ? researchersMap[id].name : id))
+                .join("、");
+            const leavesHtml = v.ordered_leaves
+                .slice()
+                .sort((a, b) => a.order - b.order)
+                .map((pl, idx) => {
+                    const note = v.consensus_notes[pl.leaf_id] || "";
+                    const unresolved = v.unresolved_disputes.includes(pl.leaf_id);
+                    return `
+            <div class="consensus-leaf-item ${unresolved ? "unresolved" : ""}">
+                <div class="consensus-leaf-order">${idx + 1}</div>
+                <div class="consensus-leaf-info">
+                    <strong>${escapeHtml(pl.leaf_id)}</strong>
+                    ${pl.flipped ? '<span class="flip-tag">翻面</span>' : ""}
+                    ${unresolved ? '<span class="badge-danger">争议未解决</span>' : ""}
+                    ${note ? `<div class="consensus-leaf-note">${escapeHtml(note)}</div>` : ""}
+                </div>
+            </div>
+        `;
+                })
+                .join("");
+            return `
+        <div class="consensus-version-card">
+            <div class="consensus-version-header">
+                <div class="consensus-version-tag">v${v.version}</div>
+                <div class="consensus-version-info">
+                    <h4>${escapeHtml(v.name || `共识版本 ${v.version}`)}</h4>
+                    ${v.description ? `<p>${escapeHtml(v.description)}</p>` : ""}
+                    <p>叶片 ${v.ordered_leaves.length} 片 · ${approvers ? `已批准: ${escapeHtml(approvers)}` : "尚未批准"}${v.is_final ? " · ✅ 最终版本" : ""}</p>
+                    <p class="consensus-version-meta">创建：${time} · by ${escapeHtml(v.created_by)}</p>
+                </div>
+                <div class="consensus-version-actions">
+                    ${project && !v.is_final
+                        ? project.researcher_ids
+                              .filter((rid) => !v.approved_by.includes(rid))
+                              .slice(0, 3)
+                              .map(
+                                  (rid) =>
+                                      `<button class="btn btn-xs" onclick="approveVersion('${v.id}','${rid}')">批准 (${escapeHtml(researchersMap[rid] ? researchersMap[rid].name : rid)})</button>`
+                              )
+                              .join("")
+                        : ""}
+                </div>
+            </div>
+            <div class="consensus-leaves-list">${leavesHtml}</div>
+            ${v.unresolved_disputes.length ? `<div class="unresolved-tag">⚠ 未解决争议叶片（${v.unresolved_disputes.length}）：${v.unresolved_disputes.join("、")}</div>` : ""}
+        </div>
+    `;
+        })
+        .join("");
+}
+
+async function generateConsensusAuto() {
+    const pid = document.getElementById("consensusProjectSelect").value;
+    if (!pid) {
+        showToast("请选择协同项目", "error");
+        return;
+    }
+    const by = prompt("请输入创建者标识：", "system") || "system";
+    const encodedPid = encodeURIComponent(pid);
+    const encodedBy = encodeURIComponent(by);
+    await apiRequest(`${API_BASE}/collaboration/projects/${encodedPid}/consensus-versions/generate?created_by=${encodedBy}`, {
+        method: "POST",
+    });
+    showToast("共识版本已自动生成");
+    await loadConsensusVersions();
+}
+
+async function approveVersion(versionId, researcherId) {
+    const encodedV = encodeURIComponent(versionId);
+    const encodedR = encodeURIComponent(researcherId);
+    await apiRequest(`${API_BASE}/collaboration/consensus-versions/${encodedV}/approve?researcher_id=${encodedR}`, {
+        method: "POST",
+    });
+    showToast("已批准");
+    await loadConsensusVersions();
+}
+
+function initCollaboration() {
+    initCollabSubtabs();
+    initSubmissionControls();
+
+    document.getElementById("addResearcherBtn").addEventListener("click", openAddResearcherModal);
+    document.getElementById("researcherForm").addEventListener("submit", submitResearcherForm);
+    document.getElementById("addProjectBtn").addEventListener("click", openAddProjectModal);
+    document.getElementById("projectForm").addEventListener("submit", submitProjectForm);
+    document.getElementById("deleteProjectBtn").addEventListener("click", deleteCurrentProject);
+    document.getElementById("viewProjectSubmissions").addEventListener("click", viewCurrentProjectSubmissions);
+
+    document.getElementById("loadSubmissionProjectBtn").addEventListener("click", loadSubmissionProject);
+    document.getElementById("addLeafToSubmission").addEventListener("click", addLeafToSubmission);
+    document.getElementById("removeLeafFromSubmission").addEventListener("click", removeLeafFromSubmission);
+    document.getElementById("submissionLeafUp").addEventListener("click", submissionLeafMoveUp);
+    document.getElementById("submissionLeafDown").addEventListener("click", submissionLeafMoveDown);
+    document.getElementById("addOpinionBtn").addEventListener("click", addOpinion);
+    document.getElementById("addDisputeBtn").addEventListener("click", addDispute);
+    document.getElementById("submitCollabBtn").addEventListener("click", submitCollabResult);
+
+    document.getElementById("loadSummaryBtn").addEventListener("click", loadSummary);
+    document.getElementById("loadDiscussionsBtn").addEventListener("click", loadDiscussions);
+    document.getElementById("postDiscussionBtn").addEventListener("click", postDiscussion);
+    document.getElementById("generateConsensusBtn").addEventListener("click", generateConsensusAuto);
+    document.getElementById("loadConsensusBtn").addEventListener("click", loadConsensusVersions);
+}
+
 async function init() {
     initTabs();
     initModals();
@@ -1460,6 +2509,7 @@ async function init() {
     initAnnotateTools();
     initCompare();
     initAudit();
+    initCollaboration();
 
     document.getElementById("addLeafBtn").addEventListener("click", openAddLeafModal);
     document.getElementById("leafForm").addEventListener("submit", submitLeafForm);
@@ -1480,6 +2530,8 @@ async function init() {
     try {
         await loadLeaves();
         await loadPlans();
+        await loadResearchers();
+        await loadCollabProjects();
     } catch (e) {
         console.error("加载数据失败:", e);
     }

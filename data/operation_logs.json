@@ -1,5 +1,233 @@
 [
   {
+    "id": "f0633b91-795f-4649-9a0f-4e3b4ee24bff",
+    "operation_type": "create",
+    "target_type": "consensus_version",
+    "target_id": "02d8b3a2-f18e-4f13-b78f-d4e2fd84d15e",
+    "operator": "system",
+    "description": "自动生成项目 '《法华经》残卷校勘项目' 的共识版本 v1",
+    "before_data": null,
+    "after_data": {
+      "id": "02d8b3a2-f18e-4f13-b78f-d4e2fd84d15e",
+      "project_id": "PROJ-001",
+      "version": 1,
+      "name": "自动共识 v1",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T12:47:39.055897",
+      "created_by": "system",
+      "approved_by": [],
+      "is_final": false
+    },
+    "created_at": "2026-06-22T12:47:39.056716"
+  },
+  {
+    "id": "c402e346-9173-4602-ba9a-84d28fee28ba",
+    "operation_type": "create",
+    "target_type": "submission",
+    "target_id": "9cc00afc-bd35-400f-8222-36c0b2b77a77",
+    "operator": "system",
+    "description": "研究者 '李教授' 提交校勘结果到项目 '《法华经》残卷校勘项目'",
+    "before_data": null,
+    "after_data": {
+      "id": "9cc00afc-bd35-400f-8222-36c0b2b77a77",
+      "project_id": "PROJ-001",
+      "researcher_id": "R-002",
+      "researcher_name": "李教授",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 2,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "annotation_opinions": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "opinion_type": "text",
+          "content": "R002-agrees-opinion",
+          "confidence": 0.95,
+          "reference": ""
+        }
+      ],
+      "dispute_notes": [],
+      "remarks": "R002 remarks",
+      "submitted_at": "2026-06-22T12:47:29.626925",
+      "is_final": true
+    },
+    "created_at": "2026-06-22T12:47:29.627938"
+  },
+  {
+    "id": "4ef078dd-6de8-4f56-9229-cc86182cca03",
+    "operation_type": "create",
+    "target_type": "submission",
+    "target_id": "12f0a1ed-9d95-4c5d-846e-ff350b099449",
+    "operator": "system",
+    "description": "研究者 '张研究员' 提交校勘结果到项目 '《法华经》残卷校勘项目'",
+    "before_data": null,
+    "after_data": {
+      "id": "12f0a1ed-9d95-4c5d-846e-ff350b099449",
+      "project_id": "PROJ-001",
+      "researcher_id": "R-001",
+      "researcher_name": "张研究员",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 2,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "annotation_opinions": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "opinion_type": "text",
+          "content": "R001-opinion",
+          "confidence": 0.9,
+          "reference": ""
+        }
+      ],
+      "dispute_notes": [
+        {
+          "id": "1b643236-f7fb-4ffa-b9e4-bd2c79a59361",
+          "leaf_id": "LF-BUG-002",
+          "dispute_type": "order",
+          "description": "R001 dispute",
+          "position": 1,
+          "flipped": false,
+          "created_at": "2026-06-22T12:47:21.532754"
+        }
+      ],
+      "remarks": "R001 remarks",
+      "submitted_at": "2026-06-22T12:47:21.535902",
+      "is_final": false
+    },
+    "created_at": "2026-06-22T12:47:21.536730"
+  },
+  {
+    "id": "4f719c74-a1f8-45a0-ace1-a0201551d3a3",
+    "operation_type": "create",
+    "target_type": "collab_project",
+    "target_id": "PROJ-001",
+    "operator": "system",
+    "description": "创建协同项目 '《法华经》残卷校勘项目' (PROJ-001)",
+    "before_data": null,
+    "after_data": {
+      "id": "PROJ-001",
+      "name": "《法华经》残卷校勘项目",
+      "description": "对新发现的法华经贝叶经残卷进行多研究者协同校勘",
+      "target_leaf_ids": [
+        "LF-BUG-001",
+        "LF-BUG-002"
+      ],
+      "researcher_ids": [
+        "R-001",
+        "R-002"
+      ],
+      "status": "ongoing",
+      "created_at": "2026-06-22T12:46:37.832405",
+      "updated_at": "2026-06-22T12:46:37.832405",
+      "created_by": "system"
+    },
+    "created_at": "2026-06-22T12:46:37.833076"
+  },
+  {
+    "id": "6e6e917c-4919-402a-8900-8633af5a0892",
+    "operation_type": "create",
+    "target_type": "researcher",
+    "target_id": "R-002",
+    "operator": "system",
+    "description": "创建研究者 '李教授' (R-002)",
+    "before_data": null,
+    "after_data": {
+      "id": "R-002",
+      "name": "李教授",
+      "affiliation": "中国藏学研究中心",
+      "email": "li@tibetology.cn",
+      "expertise": "藏文文献",
+      "created_at": "2026-06-22T12:46:31.744193"
+    },
+    "created_at": "2026-06-22T12:46:31.744892"
+  },
+  {
+    "id": "0458fa49-6cce-472e-90ca-16573049ffae",
+    "operation_type": "create",
+    "target_type": "researcher",
+    "target_id": "R-001",
+    "operator": "system",
+    "description": "创建研究者 '张研究员' (R-001)",
+    "before_data": null,
+    "after_data": {
+      "id": "R-001",
+      "name": "张研究员",
+      "affiliation": "北京大学梵语研究所",
+      "email": "zhang@pku.edu.cn",
+      "expertise": "贝叶经文献学",
+      "created_at": "2026-06-22T12:46:31.728667"
+    },
+    "created_at": "2026-06-22T12:46:31.729818"
+  },
+  {
+    "id": "ab29159d-1536-45b8-ae2f-8faa37c047d6",
+    "operation_type": "delete",
+    "target_type": "leaf",
+    "target_id": "LF-BUG-003",
+    "operator": "system",
+    "description": "删除叶片 'LF-BUG-003'，已从 1 个方案中移除",
+    "before_data": {
+      "id": "LF-BUG-003",
+      "length": 480.0,
+      "width": 45.0,
+      "holes": [
+        {
+          "x": 22.5,
+          "y": 60.0
+        }
+      ],
+      "residual_text": "初始残文 3",
+      "damage": "初始破损 3",
+      "confirmed": false,
+      "image_path": "",
+      "created_at": "2026-06-22T10:28:07.883376",
+      "updated_at": "2026-06-22T10:28:07.883376"
+    },
+    "after_data": null,
+    "created_at": "2026-06-22T10:28:07.985281"
+  },
+  {
     "id": "2b867aad-9082-4020-a846-ed8c0233716f",
     "operation_type": "update",
     "target_type": "annotation",
@@ -301,30 +529,29 @@
     "created_at": "2026-06-22T10:28:07.852301"
   },
   {
-    "id": "ab29159d-1536-45b8-ae2f-8faa37c047d6",
-    "operation_type": "delete",
-    "target_type": "leaf",
-    "target_id": "LF-BUG-003",
+    "id": "a7302aba-10fc-474e-801f-1197455c8ded",
+    "operation_type": "create",
+    "target_type": "discussion",
+    "target_id": "774f2067-b819-4c41-8580-c152b369c9da",
     "operator": "system",
-    "description": "删除叶片 'LF-BUG-003'，已从 1 个方案中移除",
-    "before_data": {
-      "id": "LF-BUG-003",
-      "length": 480.0,
-      "width": 45.0,
-      "holes": [
-        {
-          "x": 22.5,
-          "y": 60.0
-        }
+    "description": "研究者 '张研究员' 在项目 '《法华经》残卷校勘项目' 中发表讨论",
+    "before_data": null,
+    "after_data": {
+      "id": "774f2067-b819-4c41-8580-c152b369c9da",
+      "project_id": "PROJ-001",
+      "researcher_id": "R-001",
+      "researcher_name": "张研究员",
+      "reply_to_id": null,
+      "leaf_id": "LF-BUG-002",
+      "content": "关于 LF-BUG-002 是否翻面的问题，我认为应该翻面，因为穿孔位置和残文方向与 LF-BUG-001 呈镜像关系。",
+      "tags": [
+        "翻面",
+        "穿孔比对"
       ],
-      "residual_text": "初始残文 3",
-      "damage": "初始破损 3",
-      "confirmed": false,
-      "image_path": "",
-      "created_at": "2026-06-22T10:28:07.883376",
-      "updated_at": "2026-06-22T10:28:07.883376"
+      "created_at": "2026-06-22T12:47:51.226253",
+      "is_resolved": false,
+      "resolution_note": ""
     },
-    "after_data": null,
-    "created_at": "2026-06-22T10:28:07.985281"
+    "created_at": "2026-06-22T12:47:51.227043"
   }
 ]

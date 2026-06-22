@@ -19,6 +19,7 @@
         <button class="tab-btn" data-tab="compare">方案比对</button>
         <button class="tab-btn" data-tab="audit">操作日志</button>
         <button class="tab-btn" data-tab="sort">排序推荐</button>
+        <button class="tab-btn" data-tab="collaboration">协同校勘</button>
     </nav>
 
     <main class="container">
@@ -187,6 +188,215 @@
                     <button id="runSortBtn" class="btn btn-primary">执行排序</button>
                 </div>
                 <div id="sortResult" class="sort-result"></div>
+            </div>
+        </section>
+
+        <section id="collaboration" class="tab-content">
+            <div class="panel">
+                <h2>多研究者协同校勘</h2>
+                <div class="collab-subtabs">
+                    <button class="collab-tab-btn active" data-collab-tab="researchers">研究者管理</button>
+                    <button class="collab-tab-btn" data-collab-tab="projects">协同项目</button>
+                    <button class="collab-tab-btn" data-collab-tab="submission">提交校勘</button>
+                    <button class="collab-tab-btn" data-collab-tab="summary">汇总统计</button>
+                    <button class="collab-tab-btn" data-collab-tab="discussions">协同讨论</button>
+                    <button class="collab-tab-btn" data-collab-tab="consensus">共识版本</button>
+                </div>
+
+                <div id="collab-researchers" class="collab-tab-content active">
+                    <div class="collab-controls">
+                        <button id="addResearcherBtn" class="btn btn-primary">+ 添加研究者</button>
+                    </div>
+                    <div id="researchersList" class="researchers-grid"></div>
+                </div>
+
+                <div id="collab-projects" class="collab-tab-content">
+                    <div class="collab-controls">
+                        <button id="addProjectBtn" class="btn btn-primary">+ 新建协同项目</button>
+                    </div>
+                    <div id="projectsList" class="projects-grid"></div>
+                </div>
+
+                <div id="collab-submission" class="collab-tab-content">
+                    <div class="collab-controls">
+                        <div class="control-group">
+                            <label>选择项目：</label>
+                            <select id="submissionProjectSelect">
+                                <option value="">请先选择协同项目</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>当前研究者：</label>
+                            <select id="submissionResearcherSelect">
+                                <option value="">请先选择研究者</option>
+                            </select>
+                        </div>
+                        <button id="loadSubmissionProjectBtn" class="btn btn-primary">加载项目</button>
+                    </div>
+                    <div id="submissionArea" style="display:none; margin-top:20px;">
+                        <h3>叶片排序</h3>
+                        <div class="submission-sort-area">
+                            <div class="available-leaves-box">
+                                <h4>待排叶片</h4>
+                                <div id="submissionAvailableLeaves" class="leaf-select-list"></div>
+                            </div>
+                            <div class="sort-actions-box">
+                                <button type="button" id="addLeafToSubmission" class="btn btn-sm">→</button>
+                                <button type="button" id="removeLeafFromSubmission" class="btn btn-sm">←</button>
+                                <button type="button" id="submissionLeafUp" class="btn btn-sm">↑</button>
+                                <button type="button" id="submissionLeafDown" class="btn btn-sm">↓</button>
+                            </div>
+                            <div class="selected-leaves-box">
+                                <h4>当前排序（可调整翻面）</h4>
+                                <div id="submissionSelectedLeaves" class="leaf-select-list"></div>
+                            </div>
+                        </div>
+                        <h3 style="margin-top:25px;">标注意见</h3>
+                        <div class="opinion-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>叶片：</label>
+                                    <select id="opinionLeafSelect">
+                                        <option value="">选择叶片</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>意见类型：</label>
+                                    <select id="opinionTypeSelect">
+                                        <option value="text">文字</option>
+                                        <option value="damage">破损</option>
+                                        <option value="hole">穿孔</option>
+                                        <option value="other">其他</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>置信度：</label>
+                                    <input type="range" id="opinionConfidence" min="0" max="1" step="0.1" value="1.0">
+                                    <span id="opinionConfidenceVal">1.0</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>意见内容：</label>
+                                <textarea id="opinionContent" rows="2" placeholder="输入具体意见..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>参考依据：</label>
+                                <input type="text" id="opinionReference" placeholder="可选，标注依据来源...">
+                            </div>
+                            <button id="addOpinionBtn" class="btn btn-secondary">添加意见</button>
+                        </div>
+                        <div id="opinionsList" class="opinions-list" style="margin-top:15px;"></div>
+
+                        <h3 style="margin-top:25px;">争议说明</h3>
+                        <div class="dispute-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>争议叶片：</label>
+                                    <select id="disputeLeafSelect">
+                                        <option value="">选择叶片</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>争议类型：</label>
+                                    <select id="disputeTypeSelect">
+                                        <option value="order">排序</option>
+                                        <option value="annotation">标注</option>
+                                        <option value="classification">分类</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>我认为的位置：</label>
+                                    <input type="number" id="disputePosition" min="0" placeholder="可选">
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <label><input type="checkbox" id="disputeFlipped"> 应翻面</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>争议描述：</label>
+                                <textarea id="disputeDescription" rows="2" placeholder="描述争议的理由..."></textarea>
+                            </div>
+                            <button id="addDisputeBtn" class="btn btn-secondary">添加争议</button>
+                        </div>
+                        <div id="disputesList" class="disputes-list" style="margin-top:15px;"></div>
+
+                        <div class="form-group" style="margin-top:25px;">
+                            <label>整体备注：</label>
+                            <textarea id="submissionRemarks" rows="2" placeholder="整体说明或备注..."></textarea>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label><input type="checkbox" id="submissionFinal"> 标记为最终提交</label>
+                        </div>
+                        <button id="submitCollabBtn" class="btn btn-primary" style="margin-top:15px;">提交校勘结果</button>
+                    </div>
+                </div>
+
+                <div id="collab-summary" class="collab-tab-content">
+                    <div class="collab-controls">
+                        <div class="control-group">
+                            <label>选择项目：</label>
+                            <select id="summaryProjectSelect">
+                                <option value="">请选择协同项目</option>
+                            </select>
+                        </div>
+                        <button id="loadSummaryBtn" class="btn btn-primary">统计汇总</button>
+                    </div>
+                    <div id="summaryResult" class="summary-result" style="margin-top:20px;"></div>
+                </div>
+
+                <div id="collab-discussions" class="collab-tab-content">
+                    <div class="collab-controls">
+                        <div class="control-group">
+                            <label>选择项目：</label>
+                            <select id="discussionProjectSelect">
+                                <option value="">请选择协同项目</option>
+                            </select>
+                        </div>
+                        <button id="loadDiscussionsBtn" class="btn btn-primary">加载讨论</button>
+                    </div>
+                    <div id="discussionArea" style="display:none; margin-top:20px;">
+                        <div class="discussion-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>发言者：</label>
+                                    <select id="discussionResearcherSelect">
+                                        <option value="">选择研究者</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>关联叶片：</label>
+                                    <select id="discussionLeafSelect">
+                                        <option value="">（可选）</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>标签：</label>
+                                <input type="text" id="discussionTags" placeholder="用逗号分隔，如：排序争议,标注疑问">
+                            </div>
+                            <div class="form-group">
+                                <label>内容：</label>
+                                <textarea id="discussionContent" rows="3" placeholder="输入讨论内容..."></textarea>
+                            </div>
+                            <button id="postDiscussionBtn" class="btn btn-primary">发布</button>
+                        </div>
+                        <div id="discussionsList" class="discussions-list" style="margin-top:20px;"></div>
+                    </div>
+                </div>
+
+                <div id="collab-consensus" class="collab-tab-content">
+                    <div class="collab-controls">
+                        <div class="control-group">
+                            <label>选择项目：</label>
+                            <select id="consensusProjectSelect">
+                                <option value="">请选择协同项目</option>
+                            </select>
+                        </div>
+                        <button id="generateConsensusBtn" class="btn btn-secondary">自动生成共识</button>
+                        <button id="loadConsensusBtn" class="btn btn-primary">查看版本</button>
+                    </div>
+                    <div id="consensusResult" class="consensus-result" style="margin-top:20px;"></div>
+                </div>
             </div>
         </section>
     </main>
@@ -367,6 +577,95 @@
                     <button type="button" class="btn btn-secondary" data-close="versionModal">取消</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="researcherModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="researcherModal">&times;</span>
+            <h2 id="researcherModalTitle">添加研究者</h2>
+            <form id="researcherForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>研究者编号 *</label>
+                        <input type="text" id="researcherId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>姓名 *</label>
+                        <input type="text" id="researcherName" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>所属机构</label>
+                        <input type="text" id="researcherAffiliation" placeholder="大学/研究机构">
+                    </div>
+                    <div class="form-group">
+                        <label>联系邮箱</label>
+                        <input type="email" id="researcherEmail">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>研究领域/专长</label>
+                    <input type="text" id="researcherExpertise" placeholder="如：梵文文献学、贝叶经修复...">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-secondary" data-close="researcherModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="projectModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" data-modal="projectModal">&times;</span>
+            <h2 id="projectModalTitle">新建协同项目</h2>
+            <form id="projectForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>项目编号 *</label>
+                        <input type="text" id="projectId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>项目名称 *</label>
+                        <input type="text" id="projectName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>项目说明</label>
+                    <textarea id="projectDescription" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>创建者</label>
+                    <input type="text" id="projectCreatedBy" placeholder="创建者标识" value="system">
+                </div>
+                <div class="form-group">
+                    <label>选择目标叶片（多选）</label>
+                    <div id="projectLeafList" class="multi-select-list"></div>
+                </div>
+                <div class="form-group">
+                    <label>参与研究者（多选）</label>
+                    <div id="projectResearcherList" class="multi-select-list"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-secondary" data-close="projectModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="projectDetailModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" data-modal="projectDetailModal">&times;</span>
+            <h2 id="projectDetailTitle">项目详情</h2>
+            <div id="projectDetailContent"></div>
+            <div class="form-actions">
+                <button type="button" id="viewProjectSubmissions" class="btn btn-secondary">查看提交记录</button>
+                <button type="button" id="deleteProjectBtn" class="btn btn-danger">删除项目</button>
+                <button type="button" class="btn btn-secondary" data-close="projectDetailModal">关闭</button>
+            </div>
         </div>
     </div>
 

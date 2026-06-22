@@ -10,6 +10,11 @@ from .models import (
     LeafAnnotation,
     OperationLog,
     PlanVersion,
+    Researcher,
+    CollaborationProject,
+    ResearcherSubmission,
+    DiscussionMessage,
+    ConsensusVersion,
 )
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
@@ -19,6 +24,11 @@ ANNOTATIONS_FILE = os.path.join(DATA_DIR, "annotations.json")
 LOGS_FILE = os.path.join(DATA_DIR, "operation_logs.json")
 VERSIONS_FILE = os.path.join(DATA_DIR, "plan_versions.json")
 IMAGES_DIR = os.path.join(DATA_DIR, "images")
+RESEARCHERS_FILE = os.path.join(DATA_DIR, "researchers.json")
+COLLAB_PROJECTS_FILE = os.path.join(DATA_DIR, "collab_projects.json")
+SUBMISSIONS_FILE = os.path.join(DATA_DIR, "researcher_submissions.json")
+DISCUSSIONS_FILE = os.path.join(DATA_DIR, "discussion_messages.json")
+CONSENSUS_VERSIONS_FILE = os.path.join(DATA_DIR, "consensus_versions.json")
 
 
 def _ensure_data_dir():
@@ -258,3 +268,188 @@ def delete_plan_versions(plan_id: str):
     raw = _read_json_list(VERSIONS_FILE)
     filtered = [item for item in raw if item.get("plan_id") != plan_id]
     _write_json_list(VERSIONS_FILE, filtered)
+
+
+def load_all_researchers() -> Dict[str, Researcher]:
+    raw = _read_json(RESEARCHERS_FILE)
+    result = {}
+    for r_id, r_data in raw.items():
+        r_data["created_at"] = datetime.fromisoformat(r_data["created_at"])
+        result[r_id] = Researcher(**r_data)
+    return result
+
+
+def save_all_researchers(researchers: Dict[str, Researcher]):
+    raw = {}
+    for r_id, r in researchers.items():
+        raw[r_id] = r.model_dump(mode="json")
+    _write_json(RESEARCHERS_FILE, raw)
+
+
+def get_researcher(researcher_id: str) -> Optional[Researcher]:
+    researchers = load_all_researchers()
+    return researchers.get(researcher_id)
+
+
+def load_all_collab_projects() -> Dict[str, CollaborationProject]:
+    raw = _read_json(COLLAB_PROJECTS_FILE)
+    result = {}
+    for pid, pdata in raw.items():
+        pdata["created_at"] = datetime.fromisoformat(pdata["created_at"])
+        pdata["updated_at"] = datetime.fromisoformat(pdata["updated_at"])
+        result[pid] = CollaborationProject(**pdata)
+    return result
+
+
+def save_all_collab_projects(projects: Dict[str, CollaborationProject]):
+    raw = {}
+    for pid, p in projects.items():
+        raw[pid] = p.model_dump(mode="json")
+    _write_json(COLLAB_PROJECTS_FILE, raw)
+
+
+def get_collab_project(project_id: str) -> Optional[CollaborationProject]:
+    projects = load_all_collab_projects()
+    return projects.get(project_id)
+
+
+def load_submissions_by_project(project_id: str) -> List[ResearcherSubmission]:
+    raw = _read_json_list(SUBMISSIONS_FILE)
+    submissions = []
+    for item in raw:
+        item["submitted_at"] = datetime.fromisoformat(item["submitted_at"])
+        for note in item.get("dispute_notes", []):
+            note["created_at"] = datetime.fromisoformat(note["created_at"])
+        s = ResearcherSubmission(**item)
+        if s.project_id == project_id:
+            submissions.append(s)
+    submissions.sort(key=lambda s: s.submitted_at, reverse=True)
+    return submissions
+
+
+def load_submission(submission_id: str) -> Optional[ResearcherSubmission]:
+    raw = _read_json_list(SUBMISSIONS_FILE)
+    for item in raw:
+        item["submitted_at"] = datetime.fromisoformat(item["submitted_at"])
+        for note in item.get("dispute_notes", []):
+            note["created_at"] = datetime.fromisoformat(note["created_at"])
+        s = ResearcherSubmission(**item)
+        if s.id == submission_id:
+            return s
+    return None
+
+
+def save_submission(submission: ResearcherSubmission) -> ResearcherSubmission:
+    raw_list = _read_json_list(SUBMISSIONS_FILE)
+    existing = []
+    for item in raw_list:
+        item["submitted_at"] = datetime.fromisoformat(item["submitted_at"])
+        for note in item.get("dispute_notes", []):
+            note["created_at"] = datetime.fromisoformat(note["created_at"])
+        existing.append(ResearcherSubmission(**item))
+
+    if not submission.id:
+        submission.id = str(uuid.uuid4())
+    if not submission.submitted_at:
+        submission.submitted_at = datetime.now()
+
+    existing = [s for s in existing if s.id != submission.id]
+    existing.append(submission)
+    raw = [s.model_dump(mode="json") for s in existing]
+    _write_json_list(SUBMISSIONS_FILE, raw)
+    return submission
+
+
+def load_discussions_by_project(project_id: str) -> List[DiscussionMessage]:
+    raw = _read_json_list(DISCUSSIONS_FILE)
+    messages = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        m = DiscussionMessage(**item)
+        if m.project_id == project_id:
+            messages.append(m)
+    messages.sort(key=lambda m: m.created_at)
+    return messages
+
+
+def get_discussion_message(message_id: str) -> Optional[DiscussionMessage]:
+    raw = _read_json_list(DISCUSSIONS_FILE)
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        m = DiscussionMessage(**item)
+        if m.id == message_id:
+            return m
+    return None
+
+
+def save_discussion_message(message: DiscussionMessage) -> DiscussionMessage:
+    raw_list = _read_json_list(DISCUSSIONS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        existing.append(DiscussionMessage(**item))
+
+    if not message.id:
+        message.id = str(uuid.uuid4())
+    if not message.created_at:
+        message.created_at = datetime.now()
+
+    existing = [m for m in existing if m.id != message.id]
+    existing.append(message)
+    raw = [m.model_dump(mode="json") for m in existing]
+    _write_json_list(DISCUSSIONS_FILE, raw)
+    return message
+
+
+def delete_discussion_message(message_id: str):
+    raw = _read_json_list(DISCUSSIONS_FILE)
+    filtered = [item for item in raw if item.get("id") != message_id]
+    _write_json_list(DISCUSSIONS_FILE, filtered)
+
+
+def load_consensus_versions_by_project(project_id: str) -> List[ConsensusVersion]:
+    raw = _read_json_list(CONSENSUS_VERSIONS_FILE)
+    versions = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        v = ConsensusVersion(**item)
+        if v.project_id == project_id:
+            versions.append(v)
+    versions.sort(key=lambda v: v.version, reverse=True)
+    return versions
+
+
+def get_consensus_version(version_id: str) -> Optional[ConsensusVersion]:
+    raw = _read_json_list(CONSENSUS_VERSIONS_FILE)
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        v = ConsensusVersion(**item)
+        if v.id == version_id:
+            return v
+    return None
+
+
+def save_consensus_version(version: ConsensusVersion) -> ConsensusVersion:
+    raw_list = _read_json_list(CONSENSUS_VERSIONS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        existing.append(ConsensusVersion(**item))
+
+    if not version.id:
+        version.id = str(uuid.uuid4())
+    if not version.created_at:
+        version.created_at = datetime.now()
+
+    existing = [v for v in existing if v.id != version.id]
+    existing.append(version)
+    raw = [v.model_dump(mode="json") for v in existing]
+    _write_json_list(CONSENSUS_VERSIONS_FILE, raw)
+    return version
+
+
+def get_next_consensus_version_number(project_id: str) -> int:
+    existing = load_consensus_versions_by_project(project_id)
+    if not existing:
+        return 1
+    return max(v.version for v in existing) + 1

@@ -20,6 +20,11 @@ from .models import (
     ProvenanceTransfer,
     RepairRecord,
     ResearchCitation,
+    MultilingualTranscription,
+    AlignmentPair,
+    VariantAnnotation,
+    TerminologyEntry,
+    RecognitionSuggestion,
 )
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
@@ -40,6 +45,11 @@ PROVENANCE_TRANSFERS_FILE = os.path.join(DATA_DIR, "provenance_transfers.json")
 REPAIR_RECORDS_FILE = os.path.join(DATA_DIR, "repair_records.json")
 RESEARCH_CITATIONS_FILE = os.path.join(DATA_DIR, "research_citations.json")
 LEAF_SITE_LINKS_FILE = os.path.join(DATA_DIR, "leaf_site_links.json")
+MULTILINGUAL_TRANSCRIPTIONS_FILE = os.path.join(DATA_DIR, "multilingual_transcriptions.json")
+ALIGNMENT_PAIRS_FILE = os.path.join(DATA_DIR, "alignment_pairs.json")
+VARIANT_ANNOTATIONS_FILE = os.path.join(DATA_DIR, "variant_annotations.json")
+TERMINOLOGY_FILE = os.path.join(DATA_DIR, "terminology.json")
+RECOGNITION_SUGGESTIONS_FILE = os.path.join(DATA_DIR, "recognition_suggestions.json")
 
 
 def _ensure_data_dir():
@@ -743,3 +753,235 @@ def get_leaf_current_unit(leaf_id: str) -> Optional[CollectionUnit]:
         return None
     last_transfer = transfers[-1]
     return get_collection_unit(last_transfer.to_unit_id)
+
+
+def load_all_transcriptions() -> List[MultilingualTranscription]:
+    raw = _read_json_list(MULTILINGUAL_TRANSCRIPTIONS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        result.append(MultilingualTranscription(**item))
+    return result
+
+
+def load_transcriptions_by_leaf(leaf_id: str) -> List[MultilingualTranscription]:
+    all_items = load_all_transcriptions()
+    return [t for t in all_items if t.leaf_id == leaf_id]
+
+
+def get_transcription(transcription_id: str) -> Optional[MultilingualTranscription]:
+    all_items = load_all_transcriptions()
+    for t in all_items:
+        if t.id == transcription_id:
+            return t
+    return None
+
+
+def save_transcription(transcription: MultilingualTranscription) -> MultilingualTranscription:
+    raw_list = _read_json_list(MULTILINGUAL_TRANSCRIPTIONS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        existing.append(MultilingualTranscription(**item))
+
+    if not transcription.id:
+        transcription.id = str(uuid.uuid4())
+    if not transcription.created_at:
+        transcription.created_at = datetime.now()
+
+    existing = [t for t in existing if t.id != transcription.id]
+    existing.append(transcription)
+    raw = [t.model_dump(mode="json") for t in existing]
+    _write_json_list(MULTILINGUAL_TRANSCRIPTIONS_FILE, raw)
+    return transcription
+
+
+def delete_transcription(transcription_id: str):
+    raw = _read_json_list(MULTILINGUAL_TRANSCRIPTIONS_FILE)
+    filtered = [item for item in raw if item.get("id") != transcription_id]
+    _write_json_list(MULTILINGUAL_TRANSCRIPTIONS_FILE, filtered)
+
+
+def load_all_alignments() -> List[AlignmentPair]:
+    raw = _read_json_list(ALIGNMENT_PAIRS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        result.append(AlignmentPair(**item))
+    return result
+
+
+def load_alignments_by_leaf(leaf_id: str) -> List[AlignmentPair]:
+    all_items = load_all_alignments()
+    return [a for a in all_items if a.leaf_id == leaf_id]
+
+
+def get_alignment(alignment_id: str) -> Optional[AlignmentPair]:
+    all_items = load_all_alignments()
+    for a in all_items:
+        if a.id == alignment_id:
+            return a
+    return None
+
+
+def save_alignment(alignment: AlignmentPair) -> AlignmentPair:
+    raw_list = _read_json_list(ALIGNMENT_PAIRS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        existing.append(AlignmentPair(**item))
+
+    if not alignment.id:
+        alignment.id = str(uuid.uuid4())
+    if not alignment.created_at:
+        alignment.created_at = datetime.now()
+
+    existing = [a for a in existing if a.id != alignment.id]
+    existing.append(alignment)
+    raw = [a.model_dump(mode="json") for a in existing]
+    _write_json_list(ALIGNMENT_PAIRS_FILE, raw)
+    return alignment
+
+
+def delete_alignment(alignment_id: str):
+    raw = _read_json_list(ALIGNMENT_PAIRS_FILE)
+    filtered = [item for item in raw if item.get("id") != alignment_id]
+    _write_json_list(ALIGNMENT_PAIRS_FILE, filtered)
+
+
+def load_all_variants() -> List[VariantAnnotation]:
+    raw = _read_json_list(VARIANT_ANNOTATIONS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        result.append(VariantAnnotation(**item))
+    return result
+
+
+def load_variants_by_leaf(leaf_id: str) -> List[VariantAnnotation]:
+    all_items = load_all_variants()
+    return [v for v in all_items if v.leaf_id == leaf_id]
+
+
+def get_variant(variant_id: str) -> Optional[VariantAnnotation]:
+    all_items = load_all_variants()
+    for v in all_items:
+        if v.id == variant_id:
+            return v
+    return None
+
+
+def save_variant(variant: VariantAnnotation) -> VariantAnnotation:
+    raw_list = _read_json_list(VARIANT_ANNOTATIONS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        existing.append(VariantAnnotation(**item))
+
+    if not variant.id:
+        variant.id = str(uuid.uuid4())
+    if not variant.created_at:
+        variant.created_at = datetime.now()
+
+    existing = [v for v in existing if v.id != variant.id]
+    existing.append(variant)
+    raw = [v.model_dump(mode="json") for v in existing]
+    _write_json_list(VARIANT_ANNOTATIONS_FILE, raw)
+    return variant
+
+
+def delete_variant(variant_id: str):
+    raw = _read_json_list(VARIANT_ANNOTATIONS_FILE)
+    filtered = [item for item in raw if item.get("id") != variant_id]
+    _write_json_list(VARIANT_ANNOTATIONS_FILE, filtered)
+
+
+def load_all_terminology() -> Dict[str, TerminologyEntry]:
+    raw = _read_json(TERMINOLOGY_FILE)
+    result = {}
+    for tid, tdata in raw.items():
+        tdata["created_at"] = datetime.fromisoformat(tdata["created_at"])
+        tdata["updated_at"] = datetime.fromisoformat(tdata["updated_at"])
+        result[tid] = TerminologyEntry(**tdata)
+    return result
+
+
+def save_all_terminology(terms: Dict[str, TerminologyEntry]):
+    raw = {}
+    for tid, term in terms.items():
+        raw[tid] = term.model_dump(mode="json")
+    _write_json(TERMINOLOGY_FILE, raw)
+
+
+def get_terminology_entry(entry_id: str) -> Optional[TerminologyEntry]:
+    terms = load_all_terminology()
+    return terms.get(entry_id)
+
+
+def save_terminology_entry(entry: TerminologyEntry) -> TerminologyEntry:
+    terms = load_all_terminology()
+    if not entry.id:
+        entry.id = str(uuid.uuid4())
+    if not entry.created_at:
+        entry.created_at = datetime.now()
+    terms[entry.id] = entry
+    save_all_terminology(terms)
+    return entry
+
+
+def delete_terminology_entry(entry_id: str):
+    terms = load_all_terminology()
+    if entry_id in terms:
+        del terms[entry_id]
+    save_all_terminology(terms)
+
+
+def load_all_suggestions() -> List[RecognitionSuggestion]:
+    raw = _read_json_list(RECOGNITION_SUGGESTIONS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        result.append(RecognitionSuggestion(**item))
+    return result
+
+
+def load_suggestions_by_leaf(leaf_id: str) -> List[RecognitionSuggestion]:
+    all_items = load_all_suggestions()
+    return [s for s in all_items if s.leaf_id == leaf_id]
+
+
+def get_suggestion(suggestion_id: str) -> Optional[RecognitionSuggestion]:
+    all_items = load_all_suggestions()
+    for s in all_items:
+        if s.id == suggestion_id:
+            return s
+    return None
+
+
+def save_suggestion(suggestion: RecognitionSuggestion) -> RecognitionSuggestion:
+    raw_list = _read_json_list(RECOGNITION_SUGGESTIONS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        existing.append(RecognitionSuggestion(**item))
+
+    if not suggestion.id:
+        suggestion.id = str(uuid.uuid4())
+    if not suggestion.created_at:
+        suggestion.created_at = datetime.now()
+
+    existing = [s for s in existing if s.id != suggestion.id]
+    existing.append(suggestion)
+    raw = [s.model_dump(mode="json") for s in existing]
+    _write_json_list(RECOGNITION_SUGGESTIONS_FILE, raw)
+    return suggestion
+
+
+def delete_suggestion(suggestion_id: str):
+    raw = _read_json_list(RECOGNITION_SUGGESTIONS_FILE)
+    filtered = [item for item in raw if item.get("id") != suggestion_id]
+    _write_json_list(RECOGNITION_SUGGESTIONS_FILE, filtered)

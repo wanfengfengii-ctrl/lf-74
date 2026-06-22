@@ -1,5 +1,73 @@
 [
   {
+    "id": "4f4265fb-96e3-45df-ae04-e6eb426f294c",
+    "operation_type": "create",
+    "target_type": "transcription",
+    "target_id": "395b8f97-d7e2-4c89-ae80-1110adddc20a",
+    "operator": "system",
+    "description": "为叶片 'LF-BUG-001' 创建 梵文 转写",
+    "before_data": null,
+    "after_data": {
+      "id": "395b8f97-d7e2-4c89-ae80-1110adddc20a",
+      "leaf_id": "LF-BUG-001",
+      "language": "sa",
+      "language_label": "梵文",
+      "script": "devanagari",
+      "lines": [],
+      "full_text": "प्रज्ञापारमिताहृदयसूत्रम्",
+      "transcription_type": "diplomatic",
+      "source": "manual",
+      "confidence": 0.9,
+      "transcriber": "",
+      "reference": "",
+      "linked_text_region_ids": [],
+      "linked_damage_ids": [],
+      "notes": "",
+      "created_at": "2026-06-22T15:16:24.265579",
+      "updated_at": "2026-06-22T15:16:24.265588"
+    },
+    "created_at": "2026-06-22T15:16:24.272522"
+  },
+  {
+    "id": "6e03b5ce-14af-4330-a6d2-a00183487ca8",
+    "operation_type": "create",
+    "target_type": "research_citation",
+    "target_id": "726dea87-d42a-4935-a345-8dba8cf76cfa",
+    "operator": "system",
+    "description": "为叶片 'LF-BUG-001' 添加学术引用: 敦煌写本法华经残卷校勘记",
+    "before_data": null,
+    "after_data": {
+      "id": "726dea87-d42a-4935-a345-8dba8cf76cfa",
+      "leaf_id": "LF-BUG-001",
+      "citation_type": "journal",
+      "title": "敦煌写本法华经残卷校勘记",
+      "authors": [
+        "张三",
+        "李四"
+      ],
+      "year": 2023,
+      "journal": "敦煌研究",
+      "volume": "2023",
+      "issue": "3",
+      "pages": "45-60",
+      "publisher": "",
+      "doi": "10.xxxx/dhyj.2023.03.005",
+      "url": "",
+      "language": "zh",
+      "cited_content": "该叶为序品第一，存字237，具有重要校勘价值",
+      "cited_pages": "",
+      "keywords": [
+        "敦煌遗书",
+        "法华经",
+        "校勘"
+      ],
+      "significance": "",
+      "created_at": "2026-06-22T13:57:36.711372",
+      "updated_at": "2026-06-22T13:57:36.711372"
+    },
+    "created_at": "2026-06-22T13:57:36.712076"
+  },
+  {
     "id": "55ae9c9e-60a3-4c20-959d-8a64d9597939",
     "operation_type": "create",
     "target_type": "repair_record",
@@ -1369,42 +1437,36 @@
     "created_at": "2026-06-22T10:28:07.852301"
   },
   {
-    "id": "6e03b5ce-14af-4330-a6d2-a00183487ca8",
-    "operation_type": "create",
-    "target_type": "research_citation",
-    "target_id": "726dea87-d42a-4935-a345-8dba8cf76cfa",
+    "id": "d7dbed65-9f12-412c-a29f-06c333ca454d",
+    "operation_type": "update",
+    "target_type": "leaf",
+    "target_id": "LF-BUG-001",
     "operator": "system",
-    "description": "为叶片 'LF-BUG-001' 添加学术引用: 敦煌写本法华经残卷校勘记",
-    "before_data": null,
-    "after_data": {
-      "id": "726dea87-d42a-4935-a345-8dba8cf76cfa",
-      "leaf_id": "LF-BUG-001",
-      "citation_type": "journal",
-      "title": "敦煌写本法华经残卷校勘记",
-      "authors": [
-        "张三",
-        "李四"
-      ],
-      "year": 2023,
-      "journal": "敦煌研究",
-      "volume": "2023",
-      "issue": "3",
-      "pages": "45-60",
-      "publisher": "",
-      "doi": "10.xxxx/dhyj.2023.03.005",
-      "url": "",
-      "language": "zh",
-      "cited_content": "该叶为序品第一，存字237，具有重要校勘价值",
-      "cited_pages": "",
-      "keywords": [
-        "敦煌遗书",
-        "法华经",
-        "校勘"
-      ],
-      "significance": "",
-      "created_at": "2026-06-22T13:57:36.711372",
-      "updated_at": "2026-06-22T13:57:36.711372"
+    "description": "更新叶片 'LF-BUG-001'，修改字段: residual_text",
+    "before_data": {
+      "id": "LF-BUG-001",
+      "length": 480.0,
+      "width": 45.0,
+      "holes": [],
+      "residual_text": "",
+      "damage": "",
+      "confirmed": false,
+      "image_path": "images/LF-BUG-001_ace8a28a.png",
+      "created_at": "2026-06-22T10:28:07.851047",
+      "updated_at": "2026-06-22T10:28:07.960132"
     },
-    "created_at": "2026-06-22T13:57:36.712076"
+    "after_data": {
+      "id": "LF-BUG-001",
+      "length": 480.0,
+      "width": 45.0,
+      "holes": [],
+      "residual_text": "new changed text",
+      "damage": "",
+      "confirmed": false,
+      "image_path": "images/LF-BUG-001_ace8a28a.png",
+      "created_at": "2026-06-22T10:28:07.851047",
+      "updated_at": "2026-06-22T15:28:35.633765"
+    },
+    "created_at": "2026-06-22T15:28:35.637813"
   }
 ]

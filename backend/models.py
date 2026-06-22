@@ -723,3 +723,271 @@ class RelatedLeafInfo(BaseModel):
     relation_type: str = Field(description="关联类型")
     relation_detail: str = Field(default="", description="关联详情")
     strength: float = Field(default=0.0, description="关联强度 0-1")
+
+
+class TranscriptionWord(BaseModel):
+    index: int = Field(description="词序号，从0开始")
+    text: str = Field(description="词文本")
+    normalized: str = Field(default="", description="标准化形式")
+    uncertainty: float = Field(default=0.0, ge=0.0, le=1.0, description="识别不确定度 0-1")
+    is_illegible: bool = Field(default=False, description="是否无法辨认")
+    is_reconstructed: bool = Field(default=False, description="是否为推测补字")
+    annotation_text: str = Field(default="", description="残文图片上对应区域标注文本")
+
+
+class TranscriptionLine(BaseModel):
+    line_number: int = Field(description="行号，从1开始")
+    words: List[TranscriptionWord] = Field(default_factory=list, description="该行的词列表")
+    annotation_text: str = Field(default="", description="整行原始转写文本")
+    notes: str = Field(default="", description="行级注释")
+
+
+class MultilingualTranscription(BaseModel):
+    id: Optional[str] = Field(default=None, description="转写记录唯一ID")
+    leaf_id: str = Field(description="关联的叶片ID")
+    language: str = Field(description="语言代码：sa(梵文)/pi(巴利文)/bo(藏文)/zh(汉文)/other")
+    language_label: str = Field(default="", description="语言显示名称，如：梵文、巴利文")
+    script: str = Field(default="", description="书写系统：devanagari/sinhala/tibetan/chinese/romanized")
+    lines: List[TranscriptionLine] = Field(default_factory=list, description="逐行转写内容")
+    full_text: str = Field(default="", description="完整转写文本")
+    transcription_type: str = Field(default="diplomatic", description="转写类型：diplomatic(实录)/normalized(标准化)/reconstructed(复原)")
+    source: str = Field(default="", description="转写来源：manual(人工)/ocr(机器识别)/reference(引用文献)")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="整体置信度")
+    transcriber: str = Field(default="", description="转写者")
+    reference: str = Field(default="", description="参考出处")
+    linked_text_region_ids: List[str] = Field(default_factory=list, description="关联的图片残文区域ID列表")
+    linked_damage_ids: List[str] = Field(default_factory=list, description="关联的破损区域ID列表")
+    notes: str = Field(default="", description="备注")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class MultilingualTranscriptionCreate(BaseModel):
+    language: str = Field(description="语言代码：sa/pi/bo/zh/other")
+    language_label: str = Field(default="")
+    script: str = Field(default="")
+    lines: List[TranscriptionLine] = Field(default_factory=list)
+    full_text: str = Field(default="")
+    transcription_type: str = Field(default="diplomatic")
+    source: str = Field(default="manual")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    transcriber: str = Field(default="")
+    reference: str = Field(default="")
+    linked_text_region_ids: List[str] = Field(default_factory=list)
+    linked_damage_ids: List[str] = Field(default_factory=list)
+    notes: str = Field(default="")
+
+
+class MultilingualTranscriptionUpdate(BaseModel):
+    language: Optional[str] = None
+    language_label: Optional[str] = None
+    script: Optional[str] = None
+    lines: Optional[List[TranscriptionLine]] = None
+    full_text: Optional[str] = None
+    transcription_type: Optional[str] = None
+    source: Optional[str] = None
+    confidence: Optional[float] = None
+    transcriber: Optional[str] = None
+    reference: Optional[str] = None
+    linked_text_region_ids: Optional[List[str]] = None
+    linked_damage_ids: Optional[List[str]] = None
+    notes: Optional[str] = None
+
+
+class AlignmentPair(BaseModel):
+    id: Optional[str] = Field(default=None, description="对齐对ID")
+    leaf_id: str = Field(description="关联叶片ID")
+    source_lang: str = Field(description="源语言代码")
+    target_lang: str = Field(description="目标语言代码")
+    source_text: str = Field(description="源语言文本片段")
+    target_text: str = Field(description="目标语言文本片段")
+    source_word_indices: List[int] = Field(default_factory=list, description="源语言词索引列表")
+    target_word_indices: List[int] = Field(default_factory=list, description="目标语言词索引列表")
+    source_line_number: Optional[int] = Field(default=None, description="源语言行号")
+    target_line_number: Optional[int] = Field(default=None, description="目标语言行号")
+    alignment_type: str = Field(default="word", description="对齐类型：word(逐词)/phrase(短语)/line(逐行)")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="对齐置信度")
+    is_disputed: bool = Field(default=False, description="是否存在对齐争议")
+    notes: str = Field(default="", description="注释说明")
+    created_by: str = Field(default="system", description="创建者")
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+class AlignmentPairCreate(BaseModel):
+    source_lang: str
+    target_lang: str
+    source_text: str
+    target_text: str
+    source_word_indices: List[int] = Field(default_factory=list)
+    target_word_indices: List[int] = Field(default_factory=list)
+    source_line_number: Optional[int] = None
+    target_line_number: Optional[int] = None
+    alignment_type: str = Field(default="word")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    is_disputed: bool = Field(default=False)
+    notes: str = Field(default="")
+    created_by: str = Field(default="system")
+
+
+class AlignmentPairUpdate(BaseModel):
+    source_text: Optional[str] = None
+    target_text: Optional[str] = None
+    source_word_indices: Optional[List[int]] = None
+    target_word_indices: Optional[List[int]] = None
+    source_line_number: Optional[int] = None
+    target_line_number: Optional[int] = None
+    alignment_type: Optional[str] = None
+    confidence: Optional[float] = None
+    is_disputed: Optional[bool] = None
+    notes: Optional[str] = None
+
+
+class VariantAnnotation(BaseModel):
+    id: Optional[str] = Field(default=None, description="异文标注ID")
+    leaf_id: str = Field(description="关联叶片ID")
+    variant_type: str = Field(description="异文类型：substitution(替换)/omission(缺文)/addition(增文)/transposition(倒文)/corruption(讹误)")
+    language: str = Field(description="标注所属语言代码")
+    position_description: str = Field(default="", description="异文位置描述")
+    line_number: Optional[int] = Field(default=None, description="行号")
+    word_indices: List[int] = Field(default_factory=list, description="涉及的词索引")
+    original_text: str = Field(default="", description="原文/底本文字")
+    variant_text: str = Field(default="", description="异文/变体文字")
+    description: str = Field(default="", description="异文详细说明")
+    significance: str = Field(default="", description="异文学术意义")
+    source_edition: str = Field(default="", description="出处版本/校勘本")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="置信度")
+    related_alignment_ids: List[str] = Field(default_factory=list, description="关联的对齐对ID")
+    created_by: str = Field(default="system", description="标注者")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class VariantAnnotationCreate(BaseModel):
+    variant_type: str
+    language: str
+    position_description: str = Field(default="")
+    line_number: Optional[int] = None
+    word_indices: List[int] = Field(default_factory=list)
+    original_text: str = Field(default="")
+    variant_text: str = Field(default="")
+    description: str = Field(default="")
+    significance: str = Field(default="")
+    source_edition: str = Field(default="")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    related_alignment_ids: List[str] = Field(default_factory=list)
+    created_by: str = Field(default="system")
+
+
+class VariantAnnotationUpdate(BaseModel):
+    variant_type: Optional[str] = None
+    language: Optional[str] = None
+    position_description: Optional[str] = None
+    line_number: Optional[int] = None
+    word_indices: Optional[List[int]] = None
+    original_text: Optional[str] = None
+    variant_text: Optional[str] = None
+    description: Optional[str] = None
+    significance: Optional[str] = None
+    source_edition: Optional[str] = None
+    confidence: Optional[float] = None
+    related_alignment_ids: Optional[List[str]] = None
+
+
+class TerminologyEntry(BaseModel):
+    id: Optional[str] = Field(default=None, description="术语条目ID")
+    term: str = Field(description="术语原文")
+    language: str = Field(description="术语语言代码")
+    translations: Dict[str, str] = Field(default_factory=dict, description="各语言译文 {language_code: translation}")
+    sanskrit_root: str = Field(default="", description="梵文词根/语源")
+    definition: str = Field(default="", description="术语定义/释义")
+    category: str = Field(default="", description="术语分类：doctrine(教义)/ritual(仪轨)/philosophy(哲学)/grammar(文法)/other")
+    references: List[str] = Field(default_factory=list, description="参考出处列表")
+    related_terms: List[str] = Field(default_factory=list, description="关联术语ID列表")
+    notes: str = Field(default="", description="备注")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class TerminologyEntryCreate(BaseModel):
+    term: str
+    language: str
+    translations: Dict[str, str] = Field(default_factory=dict)
+    sanskrit_root: str = Field(default="")
+    definition: str = Field(default="")
+    category: str = Field(default="")
+    references: List[str] = Field(default_factory=list)
+    related_terms: List[str] = Field(default_factory=list)
+    notes: str = Field(default="")
+
+
+class TerminologyEntryUpdate(BaseModel):
+    term: Optional[str] = None
+    language: Optional[str] = None
+    translations: Optional[Dict[str, str]] = None
+    sanskrit_root: Optional[str] = None
+    definition: Optional[str] = None
+    category: Optional[str] = None
+    references: Optional[List[str]] = None
+    related_terms: Optional[List[str]] = None
+    notes: Optional[str] = None
+
+
+class RecognitionSuggestion(BaseModel):
+    id: Optional[str] = Field(default=None, description="建议ID")
+    leaf_id: str = Field(description="关联叶片ID")
+    language: str = Field(description="目标语言代码")
+    region_id: Optional[str] = Field(default=None, description="关联的图片残文区域ID")
+    line_number: Optional[int] = Field(default=None, description="行号")
+    word_index: Optional[int] = Field(default=None, description="词索引")
+    suggested_text: str = Field(description="建议识别文本")
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0, description="置信度")
+    alternatives: List[Dict[str, Any]] = Field(default_factory=list, description="备选方案 [{text, confidence}]")
+    method: str = Field(default="pattern", description="识别方法：pattern(模式匹配)/dictionary(词典查找)/contextual(上下文推断)/manual(人工)")
+    explanation: str = Field(default="", description="识别依据说明")
+    is_accepted: Optional[bool] = Field(default=None, description="是否已被采纳：true/false/null(待定)")
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+class RecognitionSuggestionCreate(BaseModel):
+    language: str
+    region_id: Optional[str] = None
+    line_number: Optional[int] = None
+    word_index: Optional[int] = None
+    suggested_text: str
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    alternatives: List[Dict[str, Any]] = Field(default_factory=list)
+    method: str = Field(default="pattern")
+    explanation: str = Field(default="")
+
+
+class RecognitionSuggestionUpdate(BaseModel):
+    suggested_text: Optional[str] = None
+    confidence: Optional[float] = None
+    alternatives: Optional[List[Dict[str, Any]]] = None
+    method: Optional[str] = None
+    explanation: Optional[str] = None
+    is_accepted: Optional[bool] = None
+
+
+class LeafMultilingualSummary(BaseModel):
+    leaf_id: str = Field(description="叶片ID")
+    transcriptions: List[MultilingualTranscription] = Field(default_factory=list, description="各语言转写列表")
+    languages: List[str] = Field(default_factory=list, description="已有转写语言列表")
+    alignment_count: int = Field(default=0, description="对齐对数量")
+    variant_count: int = Field(default=0, description="异文标注数量")
+    suggestion_count: int = Field(default=0, description="识别建议数量")
+    pending_suggestions: int = Field(default=0, description="待处理建议数量")
+    terminology_count: int = Field(default=0, description="关联术语数量")
+
+
+class ComparativeReadingView(BaseModel):
+    leaf_id: str = Field(description="叶片ID")
+    leaf_info: Dict[str, Any] = Field(description="叶片基本信息")
+    transcriptions_by_lang: Dict[str, MultilingualTranscription] = Field(default_factory=dict, description="按语言索引的转写")
+    alignments: List[AlignmentPair] = Field(default_factory=list, description="对齐对列表")
+    variants: List[VariantAnnotation] = Field(default_factory=list, description="异文标注列表")
+    terminology: List[TerminologyEntry] = Field(default_factory=list, description="术语对照列表")
+    suggestions: List[RecognitionSuggestion] = Field(default_factory=list, description="识别建议列表")
+    plan_info: Optional[Dict[str, Any]] = Field(default=None, description="关联的复原方案信息")
+    annotation_info: Optional[Dict[str, Any]] = Field(default=None, description="关联的图片标注信息")
+    consensus_info: Optional[Dict[str, Any]] = Field(default=None, description="关联的协同校勘共识信息")

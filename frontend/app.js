@@ -58,6 +58,23 @@ let state = {
         summary: null,
         currentDetailProjectId: null,
     },
+    multilingual: {
+        languages: [],
+        variantTypes: [],
+        terminologyCategories: [],
+        currentLeafId: null,
+        summary: null,
+        comparativeView: null,
+        transcriptions: [],
+        alignments: [],
+        variants: [],
+        terminology: [],
+        suggestions: [],
+        editingTranscriptionId: null,
+        editingAlignmentId: null,
+        editingVariantId: null,
+        editingTerminologyId: null,
+    },
 };
 
 function uid() {
@@ -165,6 +182,10 @@ function initTabs() {
             if (tabId === "audit") {
                 populateVersionPlanSelect();
                 loadAuditLogs();
+            }
+            if (tabId === "multilingual") {
+                populateMultiLeafSelect();
+                loadMultiMetaInfo();
             }
         });
     });
@@ -2573,6 +2594,7 @@ async function init() {
     initCompare();
     initAudit();
     initCollaboration();
+    initMultilingual();
 
     document.getElementById("addLeafBtn").addEventListener("click", openAddLeafModal);
     document.getElementById("leafForm").addEventListener("submit", submitLeafForm);
@@ -2598,6 +2620,871 @@ async function init() {
     } catch (e) {
         console.error("加载数据失败:", e);
     }
+}
+
+function populateMultiLeafSelect() {
+    const select = document.getElementById("multiLeafSelect");
+    if (!select) return;
+    select.innerHTML = '<option value="">请先选择叶片</option>' +
+        state.leaves.map((l) => `<option value="${escapeHtml(l.id)}">${escapeHtml(l.id)}</option>`).join("");
+}
+
+async function loadMultiMetaInfo() {
+    try {
+        state.multilingual.languages = await apiRequest(`${API_BASE}/multilingual/languages`);
+        state.multilingual.variantTypes = await apiRequest(`${API_BASE}/multilingual/variant-types`);
+        state.multilingual.terminologyCategories = await apiRequest(`${API_BASE}/multilingual/terminology-categories`);
+        populateLanguageSelects();
+        populateVariantTypeSelect();
+        populateTerminologyCategorySelect();
+    } catch (e) {
+        console.error("加载多语言元数据失败:", e);
+    }
+}
+
+function populateLanguageSelects() {
+    const options = state.multilingual.languages
+        .map((l) => `<option value="${escapeHtml(l.code)}">${escapeHtml(l.label)}</option>`)
+        .join("");
+    const selects = ["transcriptionLang", "alignmentSourceLang", "alignmentTargetLang", "variantLanguage", "terminologyLanguage"];
+    selects.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<option value="">请选择</option>' + options;
+    });
+}
+
+function populateVariantTypeSelect() {
+    const el = document.getElementById("variantType");
+    if (!el) return;
+    el.innerHTML =
+        '<option value="">请选择</option>' +
+        state.multilingual.variantTypes
+            .map((v) => `<option value="${escapeHtml(v.code)}">${escapeHtml(v.label)}</option>`)
+            .join("");
+}
+
+function populateTerminologyCategorySelect() {
+    const el = document.getElementById("terminologyCategory");
+    if (!el) return;
+    el.innerHTML =
+        '<option value="">请选择</option>' +
+        state.multilingual.terminologyCategories
+            .map((c) => `<option value="${escapeHtml(c.code)}">${escapeHtml(c.label)}</option>`)
+            .join("");
+}
+
+function getLanguageLabel(code) {
+    const lang = state.multilingual.languages.find((l) => l.code === code);
+    return lang ? lang.label : code;
+}
+
+function getVariantTypeLabel(code) {
+    const v = state.multilingual.variantTypes.find((x) => x.code === code);
+    return v ? v.label : code;
+}
+
+function getCategoryLabel(code) {
+    const c = state.multilingual.terminologyCategories.find((x) => x.code === code);
+    return c ? c.label : code;
+}
+
+async function loadMultiSummary() {
+    const leafId = document.getElementById("multiLeafSelect").value;
+    if (!leafId) {
+        showToast("请选择叶片", "error");
+        return;
+    }
+    state.multilingual.currentLeafId = leafId;
+    const encoded = encodeURIComponent(leafId);
+
+    try {
+        state.multilingual.summary = await apiRequest(`${API_BASE}/multilingual/leaves/${encoded}/summary`);
+        state.multilingual.comparativeView = await apiRequest(`${API_BASE}/multilingual/leaves/${encoded}/comparative-view`);
+        state.multilingual.transcriptions = state.multilingual.summary.transcriptions;
+        state.multilingual.alignments = state.multilingual.comparativeView.alignments;
+        state.multilingual.variants = state.multilingual.comparativeView.variants;
+        state.multilingual.terminology = state.multilingual.comparativeView.terminology;
+        state.multilingual.suggestions = state.multilingual.comparativeView.suggestions;
+
+        document.getElementById("multiSummaryArea").style.display = "block";
+        document.getElementById("multiMainArea").style.display = "block";
+
+        renderMultiSummary();
+        renderTranscriptions();
+        renderAlignments();
+        renderVariants();
+        renderTerminology();
+        renderSuggestions();
+        renderComparativeView();
+        renderLinkedInfo();
+    } catch (e) {
+        console.error("加载对读数据失败:", e);
+    }
+}
+
+function renderMultiSummary() {
+    const s = state.multilingual.summary;
+    const container = document.getElementById("multiSummaryStats");
+    container.innerHTML = `
+        <div class="multi-stat-item">
+            <span class="multi-stat-label">已有转写语言</span>
+            <span class="multi-stat-value">${s.languages.map((l) => getLanguageLabel(l)).join("、") || "暂无"}</span>
+        </div>
+        <div class="multi-stat-item">
+            <span class="multi-stat-label">转写记录</span>
+            <span class="multi-stat-value">${s.transcriptions.length}</span>
+        </div>
+        <div class="multi-stat-item">
+            <span class="multi-stat-label">对齐对</span>
+            <span class="multi-stat-value">${s.alignment_count}</span>
+        </div>
+        <div class="multi-stat-item">
+            <span class="multi-stat-label">异文标注</span>
+            <span class="multi-stat-value">${s.variant_count}</span>
+        </div>
+        <div class="multi-stat-item">
+            <span class="multi-stat-label">识别建议</span>
+            <span class="multi-stat-value">${s.suggestion_count}（待处理 ${s.pending_suggestions}）</span>
+        </div>
+        <div class="multi-stat-item">
+            <span class="multi-stat-label">关联术语</span>
+            <span class="multi-stat-value">${s.terminology_count}</span>
+        </div>
+    `;
+}
+
+function renderComparativeView() {
+    const container = document.getElementById("comparativeView");
+    const view = state.multilingual.comparativeView;
+    if (!view) return;
+
+    const langs = Object.keys(view.transcriptions_by_lang);
+    if (langs.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无多语言转写数据，请先添加转写</div>';
+        return;
+    }
+
+    let maxLines = 0;
+    langs.forEach((lang) => {
+        const t = view.transcriptions_by_lang[lang];
+        if (t.lines && t.lines.length > maxLines) maxLines = t.lines.length;
+    });
+
+    if (maxLines === 0) {
+        container.innerHTML = langs
+            .map((lang) => {
+                const t = view.transcriptions_by_lang[lang];
+                return `
+                <div class="compare-lang-col">
+                    <div class="compare-lang-header">${escapeHtml(getLanguageLabel(lang))} (${escapeHtml(t.script || "")})</div>
+                    <div class="compare-lang-text">${escapeHtml(t.full_text || "(无文本)")}</div>
+                </div>
+            `;
+            })
+            .join("");
+        return;
+    }
+
+    let html = '<div class="compare-table">';
+    html += '<div class="compare-row compare-header-row">';
+    html += '<div class="compare-cell compare-line-num">行号</div>';
+    langs.forEach((lang) => {
+        html += `<div class="compare-cell">${escapeHtml(getLanguageLabel(lang))}</div>`;
+    });
+    html += "</div>";
+
+    for (let i = 0; i < maxLines; i++) {
+        html += `<div class="compare-row">`;
+        html += `<div class="compare-cell compare-line-num">${i + 1}</div>`;
+        langs.forEach((lang) => {
+            const t = view.transcriptions_by_lang[lang];
+            const line = t.lines && t.lines[i];
+            const text = line ? line.annotation_text || line.words.map((w) => w.text).join(" ") : "";
+            html += `<div class="compare-cell">${escapeHtml(text || "-")}</div>`;
+        });
+        html += "</div>";
+    }
+    html += "</div>";
+    container.innerHTML = html;
+}
+
+function renderTranscriptions() {
+    const container = document.getElementById("transcriptionsList");
+    if (state.multilingual.transcriptions.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无转写记录</div>';
+        return;
+    }
+    container.innerHTML = state.multilingual.transcriptions
+        .map((t) => {
+            const time = new Date(t.updated_at).toLocaleDateString("zh-CN");
+            const typeLabel = t.transcription_type === "diplomatic" ? "实录" : t.transcription_type === "normalized" ? "标准化" : "复原";
+            return `
+                <div class="transcription-card">
+                    <div class="transcription-header">
+                        <span class="transcription-lang-tag">${escapeHtml(t.language_label || getLanguageLabel(t.language))}</span>
+                        <span class="transcription-meta">${escapeHtml(t.script || "")} · ${typeLabel} · ${time}</span>
+                    </div>
+                    <div class="transcription-text">${escapeHtml(t.full_text || "(无文本)")}</div>
+                    <div class="transcription-footer">
+                        <span>置信度: ${t.confidence.toFixed(1)}</span>
+                        ${t.transcriber ? `<span>转写者: ${escapeHtml(t.transcriber)}</span>` : ""}
+                        <div class="card-actions">
+                            <button class="btn btn-xs" onclick="editTranscription('${t.id}')">编辑</button>
+                            <button class="btn btn-xs btn-danger" onclick="deleteTranscription('${t.id}')">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+function openAddTranscriptionModal() {
+    state.multilingual.editingTranscriptionId = null;
+    document.getElementById("transcriptionModalTitle").textContent = "新增转写";
+    document.getElementById("transcriptionForm").reset();
+    document.getElementById("transcriptionId").value = "";
+    document.getElementById("transcriptionConfidenceVal").textContent = "1.0";
+    updateScriptOptions();
+    openModal("transcriptionModal");
+}
+
+function editTranscription(id) {
+    const t = state.multilingual.transcriptions.find((x) => x.id === id);
+    if (!t) return;
+    state.multilingual.editingTranscriptionId = id;
+    document.getElementById("transcriptionModalTitle").textContent = "编辑转写";
+    document.getElementById("transcriptionId").value = id;
+    document.getElementById("transcriptionLang").value = t.language;
+    updateScriptOptions();
+    document.getElementById("transcriptionLangLabel").value = t.language_label || "";
+    document.getElementById("transcriptionScript").value = t.script || "";
+    document.getElementById("transcriptionType").value = t.transcription_type;
+    document.getElementById("transcriptionSource").value = t.source;
+    document.getElementById("transcriptionConfidence").value = t.confidence;
+    document.getElementById("transcriptionConfidenceVal").textContent = t.confidence.toFixed(1);
+    document.getElementById("transcriptionFullText").value = t.full_text || "";
+    document.getElementById("transcriptionTranscriber").value = t.transcriber || "";
+    document.getElementById("transcriptionReference").value = t.reference || "";
+    document.getElementById("transcriptionNotes").value = t.notes || "";
+    openModal("transcriptionModal");
+}
+
+function updateScriptOptions() {
+    const langCode = document.getElementById("transcriptionLang").value;
+    const scriptSelect = document.getElementById("transcriptionScript");
+    const lang = state.multilingual.languages.find((l) => l.code === langCode);
+    if (lang && lang.scripts) {
+        scriptSelect.innerHTML =
+            '<option value="">请选择</option>' +
+            lang.scripts.map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    } else {
+        scriptSelect.innerHTML = '<option value="">请选择</option>';
+    }
+}
+
+async function submitTranscriptionForm(e) {
+    e.preventDefault();
+    const leafId = state.multilingual.currentLeafId;
+    if (!leafId) {
+        showToast("请先选择叶片", "error");
+        return;
+    }
+    const id = document.getElementById("transcriptionId").value;
+    const data = {
+        language: document.getElementById("transcriptionLang").value,
+        language_label: document.getElementById("transcriptionLangLabel").value,
+        script: document.getElementById("transcriptionScript").value,
+        transcription_type: document.getElementById("transcriptionType").value,
+        source: document.getElementById("transcriptionSource").value,
+        confidence: parseFloat(document.getElementById("transcriptionConfidence").value),
+        full_text: document.getElementById("transcriptionFullText").value,
+        transcriber: document.getElementById("transcriptionTranscriber").value,
+        reference: document.getElementById("transcriptionReference").value,
+        notes: document.getElementById("transcriptionNotes").value,
+        lines: [],
+    };
+
+    try {
+        const encoded = encodeURIComponent(leafId);
+        if (id) {
+            await apiRequest(`${API_BASE}/multilingual/transcriptions/${encodeURIComponent(id)}`, {
+                method: "PUT",
+                body: JSON.stringify(data),
+            });
+            showToast("转写已更新");
+        } else {
+            await apiRequest(`${API_BASE}/multilingual/leaves/${encoded}/transcriptions`, {
+                method: "POST",
+                body: JSON.stringify(data),
+            });
+            showToast("转写已添加");
+        }
+        closeModal("transcriptionModal");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function deleteTranscription(id) {
+    if (!confirm("确定删除这条转写记录吗？")) return;
+    try {
+        await apiRequest(`${API_BASE}/multilingual/transcriptions/${encodeURIComponent(id)}`, { method: "DELETE" });
+        showToast("转写已删除");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderAlignments() {
+    const container = document.getElementById("alignmentsList");
+    if (state.multilingual.alignments.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无对齐记录</div>';
+        return;
+    }
+    container.innerHTML = state.multilingual.alignments
+        .map((a) => {
+            const typeLabel = a.alignment_type === "word" ? "逐词" : a.alignment_type === "phrase" ? "短语" : "逐行";
+            return `
+                <div class="alignment-card">
+                    <div class="alignment-header">
+                        <span class="alignment-lang-pair">${escapeHtml(getLanguageLabel(a.source_lang))} → ${escapeHtml(getLanguageLabel(a.target_lang))}</span>
+                        <span class="alignment-type-tag">${typeLabel}</span>
+                        ${a.is_disputed ? '<span class="badge-danger">有争议</span>' : ""}
+                    </div>
+                    <div class="alignment-pair">
+                        <div class="alignment-source">${escapeHtml(a.source_text)}</div>
+                        <div class="alignment-arrow">⇄</div>
+                        <div class="alignment-target">${escapeHtml(a.target_text)}</div>
+                    </div>
+                    ${a.notes ? `<div class="alignment-notes">${escapeHtml(a.notes)}</div>` : ""}
+                    <div class="card-actions">
+                        <span>置信度: ${a.confidence.toFixed(1)}</span>
+                        <button class="btn btn-xs" onclick="editAlignment('${a.id}')">编辑</button>
+                        <button class="btn btn-xs btn-danger" onclick="deleteAlignment('${a.id}')">删除</button>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+function openAddAlignmentModal() {
+    state.multilingual.editingAlignmentId = null;
+    document.getElementById("alignmentModalTitle").textContent = "新增对齐";
+    document.getElementById("alignmentForm").reset();
+    document.getElementById("alignmentId").value = "";
+    document.getElementById("alignmentConfidenceVal").textContent = "1.0";
+    openModal("alignmentModal");
+}
+
+function editAlignment(id) {
+    const a = state.multilingual.alignments.find((x) => x.id === id);
+    if (!a) return;
+    state.multilingual.editingAlignmentId = id;
+    document.getElementById("alignmentModalTitle").textContent = "编辑对齐";
+    document.getElementById("alignmentId").value = id;
+    document.getElementById("alignmentSourceLang").value = a.source_lang;
+    document.getElementById("alignmentTargetLang").value = a.target_lang;
+    document.getElementById("alignmentType").value = a.alignment_type;
+    document.getElementById("alignmentSourceLine").value = a.source_line_number || "";
+    document.getElementById("alignmentTargetLine").value = a.target_line_number || "";
+    document.getElementById("alignmentConfidence").value = a.confidence;
+    document.getElementById("alignmentConfidenceVal").textContent = a.confidence.toFixed(1);
+    document.getElementById("alignmentSourceText").value = a.source_text;
+    document.getElementById("alignmentTargetText").value = a.target_text;
+    document.getElementById("alignmentNotes").value = a.notes || "";
+    document.getElementById("alignmentDisputed").checked = a.is_disputed;
+    openModal("alignmentModal");
+}
+
+async function submitAlignmentForm(e) {
+    e.preventDefault();
+    const leafId = state.multilingual.currentLeafId;
+    if (!leafId) {
+        showToast("请先选择叶片", "error");
+        return;
+    }
+    const id = document.getElementById("alignmentId").value;
+    const data = {
+        source_lang: document.getElementById("alignmentSourceLang").value,
+        target_lang: document.getElementById("alignmentTargetLang").value,
+        alignment_type: document.getElementById("alignmentType").value,
+        source_line_number: document.getElementById("alignmentSourceLine").value
+            ? parseInt(document.getElementById("alignmentSourceLine").value)
+            : null,
+        target_line_number: document.getElementById("alignmentTargetLine").value
+            ? parseInt(document.getElementById("alignmentTargetLine").value)
+            : null,
+        confidence: parseFloat(document.getElementById("alignmentConfidence").value),
+        source_text: document.getElementById("alignmentSourceText").value,
+        target_text: document.getElementById("alignmentTargetText").value,
+        notes: document.getElementById("alignmentNotes").value,
+        is_disputed: document.getElementById("alignmentDisputed").checked,
+        source_word_indices: [],
+        target_word_indices: [],
+        created_by: "system",
+    };
+
+    try {
+        const encoded = encodeURIComponent(leafId);
+        if (id) {
+            await apiRequest(`${API_BASE}/multilingual/alignments/${encodeURIComponent(id)}`, {
+                method: "PUT",
+                body: JSON.stringify(data),
+            });
+            showToast("对齐已更新");
+        } else {
+            await apiRequest(`${API_BASE}/multilingual/leaves/${encoded}/alignments`, {
+                method: "POST",
+                body: JSON.stringify(data),
+            });
+            showToast("对齐已添加");
+        }
+        closeModal("alignmentModal");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function deleteAlignment(id) {
+    if (!confirm("确定删除这条对齐记录吗？")) return;
+    try {
+        await apiRequest(`${API_BASE}/multilingual/alignments/${encodeURIComponent(id)}`, { method: "DELETE" });
+        showToast("对齐已删除");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderVariants() {
+    const container = document.getElementById("variantsList");
+    if (state.multilingual.variants.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无异文标注</div>';
+        return;
+    }
+    container.innerHTML = state.multilingual.variants
+        .map((v) => {
+            return `
+                <div class="variant-card">
+                    <div class="variant-header">
+                        <span class="variant-lang-tag">${escapeHtml(getLanguageLabel(v.language))}</span>
+                        <span class="variant-type-tag">${escapeHtml(getVariantTypeLabel(v.variant_type))}</span>
+                        ${v.line_number ? `<span class="variant-line">第${v.line_number}行</span>` : ""}
+                    </div>
+                    ${v.position_description ? `<div class="variant-position">📍 ${escapeHtml(v.position_description)}</div>` : ""}
+                    <div class="variant-compare">
+                        <div class="variant-original">
+                            <span class="variant-label">底本：</span>${escapeHtml(v.original_text || "(无)")}
+                        </div>
+                        <div class="variant-text">
+                            <span class="variant-label">异文：</span>${escapeHtml(v.variant_text || "(无)")}
+                        </div>
+                    </div>
+                    ${v.description ? `<div class="variant-desc">${escapeHtml(v.description)}</div>` : ""}
+                    ${v.significance ? `<div class="variant-sig">💡 学术意义：${escapeHtml(v.significance)}</div>` : ""}
+                    <div class="card-actions">
+                        ${v.source_edition ? `<span>出处: ${escapeHtml(v.source_edition)}</span>` : ""}
+                        <span>置信度: ${v.confidence.toFixed(1)}</span>
+                        <button class="btn btn-xs" onclick="editVariant('${v.id}')">编辑</button>
+                        <button class="btn btn-xs btn-danger" onclick="deleteVariant('${v.id}')">删除</button>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+function openAddVariantModal() {
+    state.multilingual.editingVariantId = null;
+    document.getElementById("variantModalTitle").textContent = "新增异文标注";
+    document.getElementById("variantForm").reset();
+    document.getElementById("variantId").value = "";
+    document.getElementById("variantConfidenceVal").textContent = "1.0";
+    openModal("variantModal");
+}
+
+function editVariant(id) {
+    const v = state.multilingual.variants.find((x) => x.id === id);
+    if (!v) return;
+    state.multilingual.editingVariantId = id;
+    document.getElementById("variantModalTitle").textContent = "编辑异文标注";
+    document.getElementById("variantId").value = id;
+    document.getElementById("variantType").value = v.variant_type;
+    document.getElementById("variantLanguage").value = v.language;
+    document.getElementById("variantLineNumber").value = v.line_number || "";
+    document.getElementById("variantPosition").value = v.position_description || "";
+    document.getElementById("variantOriginal").value = v.original_text || "";
+    document.getElementById("variantText").value = v.variant_text || "";
+    document.getElementById("variantDescription").value = v.description || "";
+    document.getElementById("variantSignificance").value = v.significance || "";
+    document.getElementById("variantEdition").value = v.source_edition || "";
+    document.getElementById("variantConfidence").value = v.confidence;
+    document.getElementById("variantConfidenceVal").textContent = v.confidence.toFixed(1);
+    openModal("variantModal");
+}
+
+async function submitVariantForm(e) {
+    e.preventDefault();
+    const leafId = state.multilingual.currentLeafId;
+    if (!leafId) {
+        showToast("请先选择叶片", "error");
+        return;
+    }
+    const id = document.getElementById("variantId").value;
+    const data = {
+        variant_type: document.getElementById("variantType").value,
+        language: document.getElementById("variantLanguage").value,
+        line_number: document.getElementById("variantLineNumber").value
+            ? parseInt(document.getElementById("variantLineNumber").value)
+            : null,
+        position_description: document.getElementById("variantPosition").value,
+        original_text: document.getElementById("variantOriginal").value,
+        variant_text: document.getElementById("variantText").value,
+        description: document.getElementById("variantDescription").value,
+        significance: document.getElementById("variantSignificance").value,
+        source_edition: document.getElementById("variantEdition").value,
+        confidence: parseFloat(document.getElementById("variantConfidence").value),
+        word_indices: [],
+        related_alignment_ids: [],
+        created_by: "system",
+    };
+
+    try {
+        const encoded = encodeURIComponent(leafId);
+        if (id) {
+            await apiRequest(`${API_BASE}/multilingual/variants/${encodeURIComponent(id)}`, {
+                method: "PUT",
+                body: JSON.stringify(data),
+            });
+            showToast("异文已更新");
+        } else {
+            await apiRequest(`${API_BASE}/multilingual/leaves/${encoded}/variants`, {
+                method: "POST",
+                body: JSON.stringify(data),
+            });
+            showToast("异文已添加");
+        }
+        closeModal("variantModal");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function deleteVariant(id) {
+    if (!confirm("确定删除这条异文记录吗？")) return;
+    try {
+        await apiRequest(`${API_BASE}/multilingual/variants/${encodeURIComponent(id)}`, { method: "DELETE" });
+        showToast("异文已删除");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderTerminology() {
+    const container = document.getElementById("terminologyList");
+    if (state.multilingual.terminology.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无关联术语</div>';
+        return;
+    }
+    container.innerHTML = state.multilingual.terminology
+        .map((t) => {
+            const translationsHtml = Object.entries(t.translations)
+                .map(([lang, val]) => `<span class="term-trans-item">${escapeHtml(getLanguageLabel(lang))}: ${escapeHtml(val)}</span>`)
+                .join("");
+            return `
+                <div class="term-card">
+                    <div class="term-header">
+                        <span class="term-main">${escapeHtml(t.term)}</span>
+                        <span class="term-lang-tag">${escapeHtml(getLanguageLabel(t.language))}</span>
+                        ${t.category ? `<span class="term-cat-tag">${escapeHtml(getCategoryLabel(t.category))}</span>` : ""}
+                    </div>
+                    ${t.sanskrit_root ? `<div class="term-root">梵文词根：${escapeHtml(t.sanskrit_root)}</div>` : ""}
+                    ${translationsHtml ? `<div class="term-translations">${translationsHtml}</div>` : ""}
+                    ${t.definition ? `<div class="term-def">${escapeHtml(t.definition)}</div>` : ""}
+                    <div class="card-actions">
+                        <button class="btn btn-xs" onclick="editTerminology('${t.id}')">编辑</button>
+                        <button class="btn btn-xs btn-danger" onclick="deleteTerminology('${t.id}')">删除</button>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+function openAddTerminologyModal() {
+    state.multilingual.editingTerminologyId = null;
+    document.getElementById("terminologyModalTitle").textContent = "新增术语";
+    document.getElementById("terminologyForm").reset();
+    document.getElementById("terminologyId").value = "";
+    openModal("terminologyModal");
+}
+
+function editTerminology(id) {
+    const t = state.multilingual.terminology.find((x) => x.id === id);
+    if (!t) return;
+    state.multilingual.editingTerminologyId = id;
+    document.getElementById("terminologyModalTitle").textContent = "编辑术语";
+    document.getElementById("terminologyId").value = id;
+    document.getElementById("terminologyTerm").value = t.term;
+    document.getElementById("terminologyLanguage").value = t.language;
+    document.getElementById("terminologyCategory").value = t.category || "";
+    document.getElementById("terminologyRoot").value = t.sanskrit_root || "";
+    const translationsStr = Object.entries(t.translations)
+        .map(([k, v]) => `${k}=${v}`)
+        .join("\n");
+    document.getElementById("terminologyTranslations").value = translationsStr;
+    document.getElementById("terminologyDefinition").value = t.definition || "";
+    document.getElementById("terminologyReferences").value = (t.references || []).join(",");
+    document.getElementById("terminologyNotes").value = t.notes || "";
+    openModal("terminologyModal");
+}
+
+async function submitTerminologyForm(e) {
+    e.preventDefault();
+    const id = document.getElementById("terminologyId").value;
+    const translationsRaw = document.getElementById("terminologyTranslations").value || "";
+    const translations = {};
+    translationsRaw.split("\n").forEach((line) => {
+        const idx = line.indexOf("=");
+        if (idx > 0) {
+            const k = line.substring(0, idx).trim();
+            const v = line.substring(idx + 1).trim();
+            if (k && v) translations[k] = v;
+        }
+    });
+    const references = document
+        .getElementById("terminologyReferences")
+        .value.split(",")
+        .map((s) => s.trim())
+        .filter((s) => s);
+
+    const data = {
+        term: document.getElementById("terminologyTerm").value,
+        language: document.getElementById("terminologyLanguage").value,
+        category: document.getElementById("terminologyCategory").value,
+        sanskrit_root: document.getElementById("terminologyRoot").value,
+        translations: translations,
+        definition: document.getElementById("terminologyDefinition").value,
+        references: references,
+        related_terms: [],
+        notes: document.getElementById("terminologyNotes").value,
+    };
+
+    try {
+        if (id) {
+            await apiRequest(`${API_BASE}/multilingual/terminology/${encodeURIComponent(id)}`, {
+                method: "PUT",
+                body: JSON.stringify(data),
+            });
+            showToast("术语已更新");
+        } else {
+            await apiRequest(`${API_BASE}/multilingual/terminology`, {
+                method: "POST",
+                body: JSON.stringify(data),
+            });
+            showToast("术语已添加");
+        }
+        closeModal("terminologyModal");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function deleteTerminology(id) {
+    if (!confirm("确定删除这条术语吗？")) return;
+    try {
+        await apiRequest(`${API_BASE}/multilingual/terminology/${encodeURIComponent(id)}`, { method: "DELETE" });
+        showToast("术语已删除");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderSuggestions() {
+    const container = document.getElementById("suggestionsList");
+    if (state.multilingual.suggestions.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无识别建议，点击"生成识别建议"自动生成</div>';
+        return;
+    }
+    container.innerHTML = state.multilingual.suggestions
+        .map((s) => {
+            const methodLabel = s.method === "pattern" ? "模式匹配" : s.method === "dictionary" ? "词典查找" : s.method === "contextual" ? "上下文推断" : "人工";
+            let statusBadge = "";
+            if (s.is_accepted === true) statusBadge = '<span class="badge-success">已采纳</span>';
+            else if (s.is_accepted === false) statusBadge = '<span class="badge-danger">已驳回</span>';
+            else statusBadge = '<span class="badge-warning">待处理</span>';
+            const alternativesHtml =
+                s.alternatives && s.alternatives.length > 0
+                    ? `<div class="suggestion-alts">备选：${s.alternatives
+                          .slice(0, 3)
+                          .map((a) => `<span class="alt-item">${escapeHtml(a.text)} (${(a.confidence || 0).toFixed(1)})</span>`)
+                          .join("")}</div>`
+                    : "";
+            return `
+                <div class="suggestion-card">
+                    <div class="suggestion-header">
+                        <span class="suggestion-lang">${escapeHtml(getLanguageLabel(s.language))}</span>
+                        <span class="suggestion-method">${methodLabel}</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="suggestion-text">📝 ${escapeHtml(s.suggested_text)}</div>
+                    ${s.explanation ? `<div class="suggestion-exp">${escapeHtml(s.explanation)}</div>` : ""}
+                    ${alternativesHtml}
+                    <div class="card-actions">
+                        <span>置信度: ${s.confidence.toFixed(1)}</span>
+                        ${s.is_accepted === null
+                            ? `<button class="btn btn-xs btn-success" onclick="acceptSuggestion('${s.id}')">采纳</button>
+                               <button class="btn btn-xs btn-danger" onclick="rejectSuggestion('${s.id}')">驳回</button>`
+                            : ""}
+                        <button class="btn btn-xs btn-danger" onclick="deleteSuggestion('${s.id}')">删除</button>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+async function acceptSuggestion(id) {
+    try {
+        await apiRequest(`${API_BASE}/multilingual/suggestions/${encodeURIComponent(id)}`, {
+            method: "PUT",
+            body: JSON.stringify({ is_accepted: true }),
+        });
+        showToast("已采纳建议");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function rejectSuggestion(id) {
+    try {
+        await apiRequest(`${API_BASE}/multilingual/suggestions/${encodeURIComponent(id)}`, {
+            method: "PUT",
+            body: JSON.stringify({ is_accepted: false }),
+        });
+        showToast("已驳回建议");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function deleteSuggestion(id) {
+    if (!confirm("确定删除这条建议吗？")) return;
+    try {
+        await apiRequest(`${API_BASE}/multilingual/suggestions/${encodeURIComponent(id)}`, { method: "DELETE" });
+        showToast("建议已删除");
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function generateAutoSuggestions() {
+    const leafId = state.multilingual.currentLeafId;
+    if (!leafId) {
+        showToast("请先选择叶片并加载数据", "error");
+        return;
+    }
+    try {
+        const encoded = encodeURIComponent(leafId);
+        const result = await apiRequest(`${API_BASE}/multilingual/leaves/${encoded}/auto-suggestions`, { method: "POST" });
+        showToast(`已生成 ${result.length} 条识别建议`);
+        await loadMultiSummary();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderLinkedInfo() {
+    const container = document.getElementById("linkedInfo");
+    const view = state.multilingual.comparativeView;
+    if (!view) return;
+
+    let html = "";
+
+    if (view.annotation_info) {
+        const a = view.annotation_info;
+        html += `
+            <div class="linked-info-card">
+                <h4>📷 图片标注</h4>
+                <p>穿孔: ${a.hole_count} · 破损: ${a.damage_count} · 残文区域: ${a.text_region_count}</p>
+                ${a.text_regions && a.text_regions.length
+                    ? `<div class="linked-text-regions">残文区域：<ul>${a.text_regions
+                          .map((r) => `<li>${escapeHtml(r.text || "(未识别)")}</li>`)
+                          .join("")}</ul></div>`
+                    : ""}
+            </div>
+        `;
+    }
+
+    if (view.plan_info) {
+        const p = view.plan_info;
+        html += `
+            <div class="linked-info-card">
+                <h4>📋 复原方案</h4>
+                <p>方案: ${escapeHtml(p.plan_name)} (${escapeHtml(p.plan_id)})</p>
+                <p>位置: 第${p.order !== null && p.order !== undefined ? p.order + 1 : "未知"}位 ${p.flipped ? "· 翻面" : ""}</p>
+                ${p.is_final ? '<span class="badge-success">最终方案</span>' : ""}
+            </div>
+        `;
+    }
+
+    if (view.consensus_info) {
+        const c = view.consensus_info;
+        html += `
+            <div class="linked-info-card">
+                <h4>🤝 协同校勘共识</h4>
+                <p>项目: ${escapeHtml(c.project_name)}</p>
+                <p>共识版本: v${c.version} ${escapeHtml(c.version_name)}</p>
+                <p>位置: 第${c.order !== null && c.order !== undefined ? c.order + 1 : "未知"}位 ${c.flipped ? "· 翻面" : ""}</p>
+                ${c.consensus_note ? `<p>共识说明: ${escapeHtml(c.consensus_note)}</p>` : ""}
+                ${c.is_final ? '<span class="badge-success">最终共识</span>' : ""}
+            </div>
+        `;
+    }
+
+    if (!html) {
+        html = '<div class="empty-state">暂无联动信息</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+function initMultilingual() {
+    document.getElementById("loadMultiSummaryBtn").addEventListener("click", loadMultiSummary);
+    document.getElementById("genAutoSuggestionsBtn").addEventListener("click", generateAutoSuggestions);
+    document.getElementById("addTranscriptionBtn").addEventListener("click", openAddTranscriptionModal);
+    document.getElementById("addAlignmentBtn").addEventListener("click", openAddAlignmentModal);
+    document.getElementById("addVariantBtn").addEventListener("click", openAddVariantModal);
+    document.getElementById("addTerminologyBtn").addEventListener("click", openAddTerminologyModal);
+
+    document.getElementById("transcriptionForm").addEventListener("submit", submitTranscriptionForm);
+    document.getElementById("alignmentForm").addEventListener("submit", submitAlignmentForm);
+    document.getElementById("variantForm").addEventListener("submit", submitVariantForm);
+    document.getElementById("terminologyForm").addEventListener("submit", submitTerminologyForm);
+
+    document.getElementById("transcriptionLang").addEventListener("change", updateScriptOptions);
+
+    document.getElementById("transcriptionConfidence").addEventListener("input", (e) => {
+        document.getElementById("transcriptionConfidenceVal").textContent = parseFloat(e.target.value).toFixed(1);
+    });
+    document.getElementById("alignmentConfidence").addEventListener("input", (e) => {
+        document.getElementById("alignmentConfidenceVal").textContent = parseFloat(e.target.value).toFixed(1);
+    });
+    document.getElementById("variantConfidence").addEventListener("input", (e) => {
+        document.getElementById("variantConfidenceVal").textContent = parseFloat(e.target.value).toFixed(1);
+    });
 }
 
 document.addEventListener("DOMContentLoaded", init);

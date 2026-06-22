@@ -20,6 +20,7 @@
         <button class="tab-btn" data-tab="audit">操作日志</button>
         <button class="tab-btn" data-tab="sort">排序推荐</button>
         <button class="tab-btn" data-tab="collaboration">协同校勘</button>
+        <button class="tab-btn" data-tab="multilingual">多语言对读</button>
     </nav>
 
     <main class="container">
@@ -403,7 +404,333 @@
                 </div>
             </div>
         </section>
+
+        <section id="multilingual" class="tab-content">
+            <div class="panel">
+                <h2>多语言残文识别与对读</h2>
+                <div class="multilingual-controls">
+                    <div class="control-group">
+                        <label>选择叶片：</label>
+                        <select id="multiLeafSelect">
+                            <option value="">请先选择叶片</option>
+                        </select>
+                    </div>
+                    <button id="loadMultiSummaryBtn" class="btn btn-primary">加载对读数据</button>
+                    <button id="genAutoSuggestionsBtn" class="btn btn-secondary">生成识别建议</button>
+                </div>
+
+                <div id="multiSummaryArea" style="display:none; margin-top:20px;">
+                    <div id="multiSummaryStats" class="multi-stats"></div>
+                </div>
+
+                <div id="multiMainArea" style="display:none; margin-top:20px;" class="multi-main-layout">
+                    <div class="multi-left-panel">
+                        <div class="multi-section">
+                            <div class="multi-section-header">
+                                <h3>多语言转写</h3>
+                                <button id="addTranscriptionBtn" class="btn btn-sm btn-primary">+ 新增转写</button>
+                            </div>
+                            <div id="transcriptionsList" class="transcriptions-list"></div>
+                        </div>
+
+                        <div class="multi-section">
+                            <div class="multi-section-header">
+                                <h3>术语对照</h3>
+                                <button id="addTerminologyBtn" class="btn btn-sm btn-primary">+ 新增术语</button>
+                            </div>
+                            <div id="terminologyList" class="terminology-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="multi-center-panel">
+                        <div class="multi-section">
+                            <div class="multi-section-header">
+                                <h3>跨语言对读视图</h3>
+                            </div>
+                            <div id="comparativeView" class="comparative-view"></div>
+                        </div>
+
+                        <div class="multi-section">
+                            <div class="multi-section-header">
+                                <h3>逐词对齐</h3>
+                                <button id="addAlignmentBtn" class="btn btn-sm btn-primary">+ 新增对齐</button>
+                            </div>
+                            <div id="alignmentsList" class="alignments-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="multi-right-panel">
+                        <div class="multi-section">
+                            <div class="multi-section-header">
+                                <h3>异文标注</h3>
+                                <button id="addVariantBtn" class="btn btn-sm btn-primary">+ 新增异文</button>
+                            </div>
+                            <div id="variantsList" class="variants-list"></div>
+                        </div>
+
+                        <div class="multi-section">
+                            <div class="multi-section-header">
+                                <h3>机器辅助识别建议</h3>
+                            </div>
+                            <div id="suggestionsList" class="suggestions-list"></div>
+                        </div>
+
+                        <div class="multi-section">
+                            <div class="multi-section-header">
+                                <h3>联动信息</h3>
+                            </div>
+                            <div id="linkedInfo" class="linked-info"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
+
+    <div id="transcriptionModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" data-modal="transcriptionModal">&times;</span>
+            <h2 id="transcriptionModalTitle">新增转写</h2>
+            <form id="transcriptionForm">
+                <input type="hidden" id="transcriptionId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>语言 *</label>
+                        <select id="transcriptionLang" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>语言名称</label>
+                        <input type="text" id="transcriptionLangLabel" placeholder="如：梵文">
+                    </div>
+                    <div class="form-group">
+                        <label>书写系统</label>
+                        <select id="transcriptionScript">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>转写类型</label>
+                        <select id="transcriptionType">
+                            <option value="diplomatic">实录转写</option>
+                            <option value="normalized">标准化转写</option>
+                            <option value="reconstructed">复原转写</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>转写来源</label>
+                        <select id="transcriptionSource">
+                            <option value="manual">人工录入</option>
+                            <option value="ocr">机器识别</option>
+                            <option value="reference">引用文献</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>置信度</label>
+                        <input type="range" id="transcriptionConfidence" min="0" max="1" step="0.1" value="1.0">
+                        <span id="transcriptionConfidenceVal">1.0</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>完整转写文本</label>
+                    <textarea id="transcriptionFullText" rows="4" placeholder="输入完整的转写文本..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>转写者</label>
+                        <input type="text" id="transcriptionTranscriber" placeholder="输入转写者姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>参考出处</label>
+                        <input type="text" id="transcriptionReference" placeholder="文献出处或来源">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="transcriptionNotes" rows="2" placeholder="备注说明..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-secondary" data-close="transcriptionModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="alignmentModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" data-modal="alignmentModal">&times;</span>
+            <h2 id="alignmentModalTitle">新增对齐</h2>
+            <form id="alignmentForm">
+                <input type="hidden" id="alignmentId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>源语言 *</label>
+                        <select id="alignmentSourceLang" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>目标语言 *</label>
+                        <select id="alignmentTargetLang" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>对齐类型</label>
+                        <select id="alignmentType">
+                            <option value="word">逐词对齐</option>
+                            <option value="phrase">短语对齐</option>
+                            <option value="line">逐行对齐</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>源语言行号</label>
+                        <input type="number" id="alignmentSourceLine" min="1" placeholder="可选">
+                    </div>
+                    <div class="form-group">
+                        <label>目标语言行号</label>
+                        <input type="number" id="alignmentTargetLine" min="1" placeholder="可选">
+                    </div>
+                    <div class="form-group">
+                        <label>置信度</label>
+                        <input type="range" id="alignmentConfidence" min="0" max="1" step="0.1" value="1.0">
+                        <span id="alignmentConfidenceVal">1.0</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>源语言文本 *</label>
+                    <input type="text" id="alignmentSourceText" required placeholder="源语言文本片段">
+                </div>
+                <div class="form-group">
+                    <label>目标语言文本 *</label>
+                    <input type="text" id="alignmentTargetText" required placeholder="目标语言对应文本">
+                </div>
+                <div class="form-group">
+                    <label>注释说明</label>
+                    <textarea id="alignmentNotes" rows="2" placeholder="对齐依据或说明..."></textarea>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="alignmentDisputed">
+                        存在对齐争议
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-secondary" data-close="alignmentModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="variantModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" data-modal="variantModal">&times;</span>
+            <h2 id="variantModalTitle">新增异文标注</h2>
+            <form id="variantForm">
+                <input type="hidden" id="variantId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>异文类型 *</label>
+                        <select id="variantType" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>所属语言 *</label>
+                        <select id="variantLanguage" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>行号</label>
+                        <input type="number" id="variantLineNumber" min="1" placeholder="可选">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>位置描述</label>
+                    <input type="text" id="variantPosition" placeholder="如：第2行第3词">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>原文/底本</label>
+                        <input type="text" id="variantOriginal" placeholder="底本文字">
+                    </div>
+                    <div class="form-group">
+                        <label>异文/变体</label>
+                        <input type="text" id="variantText" placeholder="异文文字">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>异文详细说明</label>
+                    <textarea id="variantDescription" rows="3" placeholder="异文的详细说明..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>学术意义</label>
+                    <textarea id="variantSignificance" rows="2" placeholder="该异文的学术价值或意义..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>出处版本</label>
+                        <input type="text" id="variantEdition" placeholder="如：敦煌本、大正藏">
+                    </div>
+                    <div class="form-group">
+                        <label>置信度</label>
+                        <input type="range" id="variantConfidence" min="0" max="1" step="0.1" value="1.0">
+                        <span id="variantConfidenceVal">1.0</span>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-secondary" data-close="variantModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="terminologyModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" data-modal="terminologyModal">&times;</span>
+            <h2 id="terminologyModalTitle">新增术语</h2>
+            <form id="terminologyForm">
+                <input type="hidden" id="terminologyId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>术语原文 *</label>
+                        <input type="text" id="terminologyTerm" required placeholder="输入术语原文">
+                    </div>
+                    <div class="form-group">
+                        <label>术语语言 *</label>
+                        <select id="terminologyLanguage" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select id="terminologyCategory"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>梵文词根/语源</label>
+                    <input type="text" id="terminologyRoot" placeholder="梵文词根或语源">
+                </div>
+                <div class="form-group">
+                    <label>各语言译文（每行一个，格式：语言代码=译文）</label>
+                    <textarea id="terminologyTranslations" rows="3" placeholder="例如：&#10;zh=般若&#10;en=Prajna"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>术语定义/释义</label>
+                    <textarea id="terminologyDefinition" rows="3" placeholder="术语的详细定义..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>参考出处（用逗号分隔）</label>
+                    <input type="text" id="terminologyReferences" placeholder="如：《大般若经》卷1,《佛学大辞典》">
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="terminologyNotes" rows="2" placeholder="备注说明..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-secondary" data-close="terminologyModal">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div id="leafModal" class="modal">
         <div class="modal-content">

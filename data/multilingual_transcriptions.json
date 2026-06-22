@@ -1,0 +1,21 @@
+[
+  {
+    "id": "395b8f97-d7e2-4c89-ae80-1110adddc20a",
+    "leaf_id": "LF-BUG-001",
+    "language": "sa",
+    "language_label": "梵文",
+    "script": "devanagari",
+    "lines": [],
+    "full_text": "प्रज्ञापारमिताहृदयसूत्रम्",
+    "transcription_type": "diplomatic",
+    "source": "manual",
+    "confidence": 0.9,
+    "transcriber": "",
+    "reference": "",
+    "linked_text_region_ids": [],
+    "linked_damage_ids": [],
+    "notes": "",
+    "created_at": "2026-06-22T15:16:24.265579",
+    "updated_at": "2026-06-22T15:16:24.265588"
+  }
+]

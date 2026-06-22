@@ -4,12 +4,12 @@
     "length": 480.0,
     "width": 45.0,
     "holes": [],
-    "residual_text": "",
+    "residual_text": "new changed text",
     "damage": "",
     "confirmed": false,
     "image_path": "images/LF-BUG-001_ace8a28a.png",
     "created_at": "2026-06-22T10:28:07.851047",
-    "updated_at": "2026-06-22T10:28:07.960132"
+    "updated_at": "2026-06-22T15:28:35.633765"
   },
   "LF-DEL-TEST2": {
     "id": "LF-DEL-TEST2",

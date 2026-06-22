@@ -5,7 +5,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
 
 from ..models import Leaf, LeafCreate, LeafUpdate, OperationType
-from ..storage import load_all_leaves, save_all_leaves, add_operation_log, delete_annotation
+from ..storage import load_all_leaves, save_all_leaves, add_operation_log, delete_annotation, load_all_plans, save_all_plans
+from ..sorting import evaluate_plan
 
 router = APIRouter(prefix="/leaves", tags=["叶片管理"])
 
@@ -104,12 +105,29 @@ def delete_leaf(leaf_id: str):
     save_all_leaves(leaves)
     delete_annotation(leaf_id)
 
+    plans = load_all_plans()
+    plans_changed = False
+    affected_plans = []
+    for plan_id, plan in plans.items():
+        plan_leaf_ids = [l.leaf_id for l in plan.leaves]
+        if leaf_id in plan_leaf_ids:
+            plan.leaves = [l for l in plan.leaves if l.leaf_id != leaf_id]
+            for i, l in enumerate(plan.leaves):
+                l.order = i
+            plan.score = evaluate_plan(plan.leaves, leaves)
+            plan.updated_at = datetime.now()
+            plans[plan_id] = plan
+            plans_changed = True
+            affected_plans.append(plan_id)
+    if plans_changed:
+        save_all_plans(plans)
+
     add_operation_log(
         operation_type=OperationType.DELETE,
         target_type="leaf",
         target_id=leaf_id,
-        description=f"删除叶片 '{leaf_id}'",
+        description=f"删除叶片 '{leaf_id}'" + (f"，已从 {len(affected_plans)} 个方案中移除" if affected_plans else ""),
         before_data=before_data,
     )
 
-    return {"message": f"叶片 '{leaf_id}' 已删除"}
+    return {"message": f"叶片 '{leaf_id}' 已删除", "removed_from_plans": affected_plans}

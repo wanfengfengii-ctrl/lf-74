@@ -1,61 +1,31 @@
 {
-  "LF-TEST-001": {
-    "id": "LF-TEST-001",
+  "LF-BUG-001": {
+    "id": "LF-BUG-001",
+    "length": 480.0,
+    "width": 45.0,
+    "holes": [],
+    "residual_text": "",
+    "damage": "",
+    "confirmed": false,
+    "image_path": "images/LF-BUG-001_ace8a28a.png",
+    "created_at": "2026-06-22T10:28:07.851047",
+    "updated_at": "2026-06-22T10:28:07.960132"
+  },
+  "LF-BUG-002": {
+    "id": "LF-BUG-002",
     "length": 480.0,
     "width": 45.0,
     "holes": [
       {
-        "x": 10.0,
-        "y": 5.0
-      },
-      {
-        "x": 20.0,
-        "y": 5.0
+        "x": 22.5,
+        "y": 50.0
       }
     ],
-    "residual_text": "residual text content",
-    "damage": "mild: edge wear",
-    "confirmed": false,
-    "image_path": "images/LF-TEST-001_7b9e914b.png",
-    "created_at": "2026-06-22T09:25:18.213554",
-    "updated_at": "2026-06-22T09:25:18.403899"
-  },
-  "LF-TEST-002": {
-    "id": "LF-TEST-002",
-    "length": 478.0,
-    "width": 44.0,
-    "holes": [
-      {
-        "x": 22.0,
-        "y": 240.0
-      }
-    ],
-    "residual_text": "test residual text 2",
-    "damage": "burn mark",
+    "residual_text": "初始残文 2",
+    "damage": "初始破损 2",
     "confirmed": false,
     "image_path": "",
-    "created_at": "2026-06-22T09:25:18.230263",
-    "updated_at": "2026-06-22T09:25:18.230263"
-  },
-  "LF-TEST-003": {
-    "id": "LF-TEST-003",
-    "length": 482.0,
-    "width": 46.0,
-    "holes": [
-      {
-        "x": 23.0,
-        "y": 30.0
-      },
-      {
-        "x": 23.0,
-        "y": 452.0
-      }
-    ],
-    "residual_text": "test residual text 3",
-    "damage": "good condition",
-    "confirmed": false,
-    "image_path": "",
-    "created_at": "2026-06-22T09:25:18.243845",
-    "updated_at": "2026-06-22T09:25:18.243845"
+    "created_at": "2026-06-22T10:28:07.870642",
+    "updated_at": "2026-06-22T10:28:07.870642"
   }
 }

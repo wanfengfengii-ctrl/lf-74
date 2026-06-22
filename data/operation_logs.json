@@ -1,93 +1,14 @@
 [
   {
-    "id": "85952e74-9134-4c8b-badb-3967d9821eba",
-    "operation_type": "update",
-    "target_type": "plan",
-    "target_id": "PLAN-A-001",
-    "operator": "system",
-    "description": "更新方案 'Plan A v2-modified'，修改字段: name, description, leaves",
-    "before_data": {
-      "id": "PLAN-A-001",
-      "name": "Plan A v1",
-      "description": "initial version",
-      "leaves": [
-        {
-          "leaf_id": "LF-TEST-001",
-          "order": 0,
-          "flipped": false,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-002",
-          "order": 1,
-          "flipped": false,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-003",
-          "order": 2,
-          "flipped": false,
-          "rotated": 0.0
-        }
-      ],
-      "is_final": false,
-      "created_at": "2026-06-22T09:25:18.291292",
-      "updated_at": "2026-06-22T09:25:18.291292",
-      "score": 0.1634
-    },
-    "after_data": {
-      "id": "PLAN-A-001",
-      "name": "Plan A v2-modified",
-      "description": "modified version",
-      "leaves": [
-        {
-          "leaf_id": "LF-TEST-002",
-          "order": 0,
-          "flipped": true,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-001",
-          "order": 1,
-          "flipped": false,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-003",
-          "order": 2,
-          "flipped": false,
-          "rotated": 0.0
-        }
-      ],
-      "is_final": false,
-      "created_at": "2026-06-22T09:25:18.291292",
-      "updated_at": "2026-06-22T09:25:18.437233",
-      "score": 0.1796
-    },
-    "created_at": "2026-06-22T09:25:18.441267"
-  },
-  {
-    "id": "b018dd83-486b-434e-a091-f265251293f4",
+    "id": "2b867aad-9082-4020-a846-ed8c0233716f",
     "operation_type": "update",
     "target_type": "annotation",
-    "target_id": "LF-TEST-001",
+    "target_id": "LF-BUG-001",
     "operator": "system",
-    "description": "更新叶片 'LF-TEST-001' 的图片标注",
+    "description": "更新叶片 'LF-BUG-001' 的图片标注",
     "before_data": {
-      "leaf_id": "LF-TEST-001",
-      "image_path": "images/LF-TEST-001_7b9e914b.png",
-      "image_width": 0,
-      "image_height": 0,
-      "scale": 1.0,
-      "holes": [],
-      "damage_regions": [],
-      "text_regions": [],
-      "created_at": "2026-06-22T09:25:18.383677",
-      "updated_at": "2026-06-22T09:25:18.383678"
-    },
-    "after_data": {
-      "leaf_id": "LF-TEST-001",
-      "image_path": "images/LF-TEST-001_7b9e914b.png",
+      "leaf_id": "LF-BUG-001",
+      "image_path": "images/LF-BUG-001_ace8a28a.png",
       "image_width": 500,
       "image_height": 200,
       "scale": 10.0,
@@ -96,16 +17,16 @@
           "id": "h1",
           "x": 100.0,
           "y": 50.0,
-          "real_x": 10.0,
-          "real_y": 5.0,
+          "real_x": 22.5,
+          "real_y": 30.0,
           "note": ""
         },
         {
           "id": "h2",
           "x": 200.0,
           "y": 50.0,
-          "real_x": 20.0,
-          "real_y": 5.0,
+          "real_x": 22.5,
+          "real_y": 450.0,
           "note": ""
         }
       ],
@@ -116,8 +37,8 @@
           "y": 100.0,
           "width": 80.0,
           "height": 60.0,
-          "severity": "mild",
-          "description": "edge wear"
+          "severity": "severe",
+          "description": "严重破损区域"
         }
       ],
       "text_regions": [
@@ -127,279 +48,283 @@
           "y": 120.0,
           "width": 60.0,
           "height": 30.0,
-          "text": "residual text content",
+          "text": "修改后的残文内容",
           "linked_damage_ids": [
             "d1"
           ]
         }
       ],
-      "created_at": "2026-06-22T09:25:18.383677",
-      "updated_at": "2026-06-22T09:25:18.402759"
+      "created_at": "2026-06-22T10:28:07.907892",
+      "updated_at": "2026-06-22T10:28:07.918154"
     },
-    "created_at": "2026-06-22T09:25:18.404279"
+    "after_data": {
+      "leaf_id": "LF-BUG-001",
+      "image_path": "images/LF-BUG-001_ace8a28a.png",
+      "image_width": 500,
+      "image_height": 200,
+      "scale": 10.0,
+      "holes": [],
+      "damage_regions": [],
+      "text_regions": [],
+      "created_at": "2026-06-22T10:28:07.907892",
+      "updated_at": "2026-06-22T10:28:07.959688"
+    },
+    "created_at": "2026-06-22T10:28:07.962948"
   },
   {
-    "id": "b94ed3f3-9d49-47db-a278-88087f0f6e32",
+    "id": "30957024-6544-437c-b206-e61b304988f9",
+    "operation_type": "update",
+    "target_type": "plan",
+    "target_id": "PLAN-BUG-001",
+    "operator": "system",
+    "description": "叶片 'LF-BUG-001' 标注变化导致方案评分更新: 0.5807 -> 0.5229",
+    "before_data": null,
+    "after_data": null,
+    "created_at": "2026-06-22T10:28:07.961827"
+  },
+  {
+    "id": "a7cfa363-b9ad-4203-b6bf-cfb7873a2b30",
+    "operation_type": "update",
+    "target_type": "annotation",
+    "target_id": "LF-BUG-001",
+    "operator": "system",
+    "description": "更新叶片 'LF-BUG-001' 的图片标注",
+    "before_data": {
+      "leaf_id": "LF-BUG-001",
+      "image_path": "images/LF-BUG-001_ace8a28a.png",
+      "image_width": 0,
+      "image_height": 0,
+      "scale": 1.0,
+      "holes": [],
+      "damage_regions": [],
+      "text_regions": [],
+      "created_at": "2026-06-22T10:28:07.907892",
+      "updated_at": "2026-06-22T10:28:07.907895"
+    },
+    "after_data": {
+      "leaf_id": "LF-BUG-001",
+      "image_path": "images/LF-BUG-001_ace8a28a.png",
+      "image_width": 500,
+      "image_height": 200,
+      "scale": 10.0,
+      "holes": [
+        {
+          "id": "h1",
+          "x": 100.0,
+          "y": 50.0,
+          "real_x": 22.5,
+          "real_y": 30.0,
+          "note": ""
+        },
+        {
+          "id": "h2",
+          "x": 200.0,
+          "y": 50.0,
+          "real_x": 22.5,
+          "real_y": 450.0,
+          "note": ""
+        }
+      ],
+      "damage_regions": [
+        {
+          "id": "d1",
+          "x": 50.0,
+          "y": 100.0,
+          "width": 80.0,
+          "height": 60.0,
+          "severity": "severe",
+          "description": "严重破损区域"
+        }
+      ],
+      "text_regions": [
+        {
+          "id": "t1",
+          "x": 120.0,
+          "y": 120.0,
+          "width": 60.0,
+          "height": 30.0,
+          "text": "修改后的残文内容",
+          "linked_damage_ids": [
+            "d1"
+          ]
+        }
+      ],
+      "created_at": "2026-06-22T10:28:07.907892",
+      "updated_at": "2026-06-22T10:28:07.918154"
+    },
+    "created_at": "2026-06-22T10:28:07.919991"
+  },
+  {
+    "id": "d3676415-c450-4c2c-ac6a-c7b7ecdb08bc",
+    "operation_type": "update",
+    "target_type": "plan",
+    "target_id": "PLAN-BUG-001",
+    "operator": "system",
+    "description": "叶片 'LF-BUG-001' 标注变化导致方案评分更新: 0.6458 -> 0.5807",
+    "before_data": null,
+    "after_data": null,
+    "created_at": "2026-06-22T10:28:07.919288"
+  },
+  {
+    "id": "5f872881-63a2-47c8-b931-d9794598b32e",
     "operation_type": "upload",
     "target_type": "annotation",
-    "target_id": "LF-TEST-001",
+    "target_id": "LF-BUG-001",
     "operator": "system",
-    "description": "上传叶片 'LF-TEST-001' 的高清图片: test.png",
+    "description": "上传叶片 'LF-BUG-001' 的高清图片: test.png",
     "before_data": {
       "image_path": ""
     },
     "after_data": {
-      "image_path": "images/LF-TEST-001_7b9e914b.png"
+      "image_path": "images/LF-BUG-001_ace8a28a.png"
     },
-    "created_at": "2026-06-22T09:25:18.384214"
+    "created_at": "2026-06-22T10:28:07.908351"
   },
   {
-    "id": "9db8a60c-05ce-4d48-8b82-2e9aa0a83c79",
+    "id": "669e8ae4-29a8-4040-881d-5a29892596ba",
     "operation_type": "create",
     "target_type": "plan",
-    "target_id": "PLAN-B-001",
+    "target_id": "PLAN-BUG-001",
     "operator": "system",
-    "description": "创建复原方案 'Plan B v1' (PLAN-B-001)",
+    "description": "创建复原方案 'Bug测试方案' (PLAN-BUG-001)",
     "before_data": null,
     "after_data": {
-      "id": "PLAN-B-001",
-      "name": "Plan B v1",
-      "description": "alternative ordering",
+      "id": "PLAN-BUG-001",
+      "name": "Bug测试方案",
+      "description": "用于验证bug修复",
       "leaves": [
         {
-          "leaf_id": "LF-TEST-003",
+          "leaf_id": "LF-BUG-001",
           "order": 0,
           "flipped": false,
           "rotated": 0.0
         },
         {
-          "leaf_id": "LF-TEST-001",
+          "leaf_id": "LF-BUG-002",
           "order": 1,
-          "flipped": true,
+          "flipped": false,
           "rotated": 0.0
         },
         {
-          "leaf_id": "LF-TEST-002",
+          "leaf_id": "LF-BUG-003",
           "order": 2,
           "flipped": false,
           "rotated": 0.0
         }
       ],
       "is_final": false,
-      "created_at": "2026-06-22T09:25:18.357043",
-      "updated_at": "2026-06-22T09:25:18.357043",
-      "score": 0.3799
+      "created_at": "2026-06-22T10:28:07.892372",
+      "updated_at": "2026-06-22T10:28:07.892372",
+      "score": 0.6458
     },
-    "created_at": "2026-06-22T09:25:18.357712"
+    "created_at": "2026-06-22T10:28:07.893218"
   },
   {
-    "id": "c2a21bac-06bb-4dac-8611-729395485592",
-    "operation_type": "snapshot",
-    "target_type": "plan",
-    "target_id": "PLAN-A-001",
-    "operator": "system",
-    "description": "创建方案快照: v1-Initial (v1)",
-    "before_data": null,
-    "after_data": {
-      "version_id": "7babd9e1-493b-4061-a6d6-faa8872d9247",
-      "version": 1,
-      "name": "v1-Initial"
-    },
-    "created_at": "2026-06-22T09:25:18.325726"
-  },
-  {
-    "id": "021c8969-e6fd-4ab5-84c8-6958af741739",
-    "operation_type": "create",
-    "target_type": "plan",
-    "target_id": "PLAN-A-001",
-    "operator": "system",
-    "description": "创建复原方案 'Plan A v1' (PLAN-A-001)",
-    "before_data": null,
-    "after_data": {
-      "id": "PLAN-A-001",
-      "name": "Plan A v1",
-      "description": "initial version",
-      "leaves": [
-        {
-          "leaf_id": "LF-TEST-001",
-          "order": 0,
-          "flipped": false,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-002",
-          "order": 1,
-          "flipped": false,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-003",
-          "order": 2,
-          "flipped": false,
-          "rotated": 0.0
-        }
-      ],
-      "is_final": false,
-      "created_at": "2026-06-22T09:25:18.291292",
-      "updated_at": "2026-06-22T09:25:18.291292",
-      "score": 0.1634
-    },
-    "created_at": "2026-06-22T09:25:18.292320"
-  },
-  {
-    "id": "61a3a08d-9f07-4fd8-a7b1-b11f2799933a",
+    "id": "1a978751-5b56-426e-b092-305435cb5637",
     "operation_type": "create",
     "target_type": "leaf",
-    "target_id": "LF-TEST-003",
+    "target_id": "LF-BUG-003",
     "operator": "system",
-    "description": "创建叶片 'LF-TEST-003'",
+    "description": "创建叶片 'LF-BUG-003'",
     "before_data": null,
     "after_data": {
-      "id": "LF-TEST-003",
-      "length": 482.0,
-      "width": 46.0,
-      "holes": [
-        {
-          "x": 23.0,
-          "y": 30.0
-        },
-        {
-          "x": 23.0,
-          "y": 452.0
-        }
-      ],
-      "residual_text": "test residual text 3",
-      "damage": "good condition",
-      "confirmed": false,
-      "image_path": "",
-      "created_at": "2026-06-22T09:25:18.243845",
-      "updated_at": "2026-06-22T09:25:18.243845"
-    },
-    "created_at": "2026-06-22T09:25:18.244751"
-  },
-  {
-    "id": "009341be-2134-494d-a41d-785bee1e710e",
-    "operation_type": "create",
-    "target_type": "leaf",
-    "target_id": "LF-TEST-002",
-    "operator": "system",
-    "description": "创建叶片 'LF-TEST-002'",
-    "before_data": null,
-    "after_data": {
-      "id": "LF-TEST-002",
-      "length": 478.0,
-      "width": 44.0,
-      "holes": [
-        {
-          "x": 22.0,
-          "y": 240.0
-        }
-      ],
-      "residual_text": "test residual text 2",
-      "damage": "burn mark",
-      "confirmed": false,
-      "image_path": "",
-      "created_at": "2026-06-22T09:25:18.230263",
-      "updated_at": "2026-06-22T09:25:18.230263"
-    },
-    "created_at": "2026-06-22T09:25:18.230672"
-  },
-  {
-    "id": "381f6238-a501-49c1-87cd-d5d8df460d22",
-    "operation_type": "create",
-    "target_type": "leaf",
-    "target_id": "LF-TEST-001",
-    "operator": "system",
-    "description": "创建叶片 'LF-TEST-001'",
-    "before_data": null,
-    "after_data": {
-      "id": "LF-TEST-001",
+      "id": "LF-BUG-003",
       "length": 480.0,
       "width": 45.0,
       "holes": [
         {
           "x": 22.5,
-          "y": 30.0
-        },
-        {
-          "x": 22.5,
-          "y": 450.0
+          "y": 60.0
         }
       ],
-      "residual_text": "test residual text 1",
-      "damage": "edge damage",
+      "residual_text": "初始残文 3",
+      "damage": "初始破损 3",
       "confirmed": false,
       "image_path": "",
-      "created_at": "2026-06-22T09:25:18.213554",
-      "updated_at": "2026-06-22T09:25:18.213554"
+      "created_at": "2026-06-22T10:28:07.883376",
+      "updated_at": "2026-06-22T10:28:07.883376"
     },
-    "created_at": "2026-06-22T09:25:18.216860"
+    "created_at": "2026-06-22T10:28:07.883938"
   },
   {
-    "id": "900c1008-0f5b-4dce-b73e-9f4394789c11",
-    "operation_type": "restore",
-    "target_type": "plan",
-    "target_id": "PLAN-A-001",
+    "id": "be6f9c6e-d0b4-47f7-a70b-f8cc00ad029f",
+    "operation_type": "create",
+    "target_type": "leaf",
+    "target_id": "LF-BUG-002",
     "operator": "system",
-    "description": "恢复方案到版本 v1-Initial (v1)",
-    "before_data": {
-      "id": "PLAN-A-001",
-      "name": "Plan A v2-modified",
-      "description": "modified version",
-      "leaves": [
-        {
-          "leaf_id": "LF-TEST-002",
-          "order": 0,
-          "flipped": true,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-001",
-          "order": 1,
-          "flipped": false,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-003",
-          "order": 2,
-          "flipped": false,
-          "rotated": 0.0
-        }
-      ],
-      "is_final": false,
-      "created_at": "2026-06-22T09:25:18.291292",
-      "updated_at": "2026-06-22T09:25:18.437233",
-      "score": 0.1796
-    },
+    "description": "创建叶片 'LF-BUG-002'",
+    "before_data": null,
     "after_data": {
-      "id": "PLAN-A-001",
-      "name": "Plan A v2-modified",
-      "description": "modified version",
-      "leaves": [
+      "id": "LF-BUG-002",
+      "length": 480.0,
+      "width": 45.0,
+      "holes": [
         {
-          "leaf_id": "LF-TEST-001",
-          "order": 0,
-          "flipped": false,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-002",
-          "order": 1,
-          "flipped": false,
-          "rotated": 0.0
-        },
-        {
-          "leaf_id": "LF-TEST-003",
-          "order": 2,
-          "flipped": false,
-          "rotated": 0.0
+          "x": 22.5,
+          "y": 50.0
         }
       ],
-      "is_final": false,
-      "created_at": "2026-06-22T09:25:18.291292",
-      "updated_at": "2026-06-22T09:25:18.450852",
-      "score": 0.1388
+      "residual_text": "初始残文 2",
+      "damage": "初始破损 2",
+      "confirmed": false,
+      "image_path": "",
+      "created_at": "2026-06-22T10:28:07.870642",
+      "updated_at": "2026-06-22T10:28:07.870642"
     },
-    "created_at": "2026-06-22T09:25:18.451850"
+    "created_at": "2026-06-22T10:28:07.871023"
+  },
+  {
+    "id": "dd344799-ac5a-4e47-a070-365373ac05af",
+    "operation_type": "create",
+    "target_type": "leaf",
+    "target_id": "LF-BUG-001",
+    "operator": "system",
+    "description": "创建叶片 'LF-BUG-001'",
+    "before_data": null,
+    "after_data": {
+      "id": "LF-BUG-001",
+      "length": 480.0,
+      "width": 45.0,
+      "holes": [
+        {
+          "x": 22.5,
+          "y": 40.0
+        }
+      ],
+      "residual_text": "初始残文 1",
+      "damage": "初始破损 1",
+      "confirmed": false,
+      "image_path": "",
+      "created_at": "2026-06-22T10:28:07.851047",
+      "updated_at": "2026-06-22T10:28:07.851047"
+    },
+    "created_at": "2026-06-22T10:28:07.852301"
+  },
+  {
+    "id": "ab29159d-1536-45b8-ae2f-8faa37c047d6",
+    "operation_type": "delete",
+    "target_type": "leaf",
+    "target_id": "LF-BUG-003",
+    "operator": "system",
+    "description": "删除叶片 'LF-BUG-003'，已从 1 个方案中移除",
+    "before_data": {
+      "id": "LF-BUG-003",
+      "length": 480.0,
+      "width": 45.0,
+      "holes": [
+        {
+          "x": 22.5,
+          "y": 60.0
+        }
+      ],
+      "residual_text": "初始残文 3",
+      "damage": "初始破损 3",
+      "confirmed": false,
+      "image_path": "",
+      "created_at": "2026-06-22T10:28:07.883376",
+      "updated_at": "2026-06-22T10:28:07.883376"
+    },
+    "after_data": null,
+    "created_at": "2026-06-22T10:28:07.985281"
   }
 ]

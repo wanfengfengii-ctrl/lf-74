@@ -24,7 +24,10 @@ from ..storage import (
     save_image_file,
     get_image_path,
     add_operation_log,
+    load_all_plans,
+    save_all_plans,
 )
+from ..sorting import evaluate_plan
 
 router = APIRouter(prefix="/annotations", tags=["叶片图片标注"])
 
@@ -72,41 +75,65 @@ def update_leaf_annotation(leaf_id: str, data: LeafAnnotationUpdate):
 
     save_annotation(annotation)
 
-    if annotation.holes:
-        leaf = leaves[leaf_id]
+    update_data = data.model_dump(exclude_unset=True)
+    leaf = leaves[leaf_id]
+    leaf_changed = False
+
+    if "holes" in update_data:
         real_holes = []
         for h in annotation.holes:
             h_obj = ImageHole(**h) if isinstance(h, dict) else h
             if h_obj.real_x is not None and h_obj.real_y is not None:
                 real_holes.append(HolePosition(x=h_obj.real_x, y=h_obj.real_y))
-        if real_holes:
+        if real_holes != leaf.holes:
             leaf.holes = real_holes
-            leaf.updated_at = datetime.now()
-            leaves[leaf_id] = leaf
-            save_all_leaves(leaves)
+            leaf_changed = True
 
-    if annotation.text_regions:
-        leaf = leaves[leaf_id]
+    if "text_regions" in update_data:
         combined_text = " ".join(
-            [ (TextRegion(**tr).text if isinstance(tr, dict) else tr.text) for tr in annotation.text_regions if (TextRegion(**tr).text if isinstance(tr, dict) else tr.text).strip() ]
+            [(TextRegion(**tr).text if isinstance(tr, dict) else tr.text)
+             for tr in annotation.text_regions
+             if (TextRegion(**tr).text if isinstance(tr, dict) else tr.text).strip()]
         )
-        if combined_text:
+        if combined_text != leaf.residual_text:
             leaf.residual_text = combined_text
-            leaf.updated_at = datetime.now()
-            leaves[leaf_id] = leaf
-            save_all_leaves(leaves)
+            leaf_changed = True
 
-    if annotation.damage_regions:
-        leaf = leaves[leaf_id]
+    if "damage_regions" in update_data:
         damage_desc = "; ".join(
-            [f"{(DamageRegion(**dr).severity if isinstance(dr, dict) else dr.severity)}: {(DamageRegion(**dr).description if isinstance(dr, dict) else dr.description)}"
-             for dr in annotation.damage_regions if (DamageRegion(**dr).description if isinstance(dr, dict) else dr.description).strip()]
+            [f"{(DamageRegion(**dr).severity if isinstance(dr, dict) else dr.severity)}: "
+             f"{(DamageRegion(**dr).description if isinstance(dr, dict) else dr.description)}"
+             for dr in annotation.damage_regions
+             if (DamageRegion(**dr).description if isinstance(dr, dict) else dr.description).strip()]
         )
-        if damage_desc:
+        if damage_desc != leaf.damage:
             leaf.damage = damage_desc
-            leaf.updated_at = datetime.now()
-            leaves[leaf_id] = leaf
-            save_all_leaves(leaves)
+            leaf_changed = True
+
+    if leaf_changed:
+        leaf.updated_at = datetime.now()
+        leaves[leaf_id] = leaf
+        save_all_leaves(leaves)
+
+        plans = load_all_plans()
+        plans_changed = False
+        for plan_id, plan in plans.items():
+            plan_leaf_ids = [l.leaf_id for l in plan.leaves]
+            if leaf_id in plan_leaf_ids:
+                old_score = plan.score
+                plan.score = evaluate_plan(plan.leaves, leaves)
+                plan.updated_at = datetime.now()
+                plans[plan_id] = plan
+                plans_changed = True
+                if old_score != plan.score:
+                    add_operation_log(
+                        operation_type=OperationType.UPDATE,
+                        target_type="plan",
+                        target_id=plan_id,
+                        description=f"叶片 '{leaf_id}' 标注变化导致方案评分更新: {old_score} -> {plan.score}",
+                    )
+        if plans_changed:
+            save_all_plans(plans)
 
     add_operation_log(
         operation_type=OperationType.UPDATE,

@@ -1,60 +1,25 @@
 {
-  "PLAN-A-001": {
-    "id": "PLAN-A-001",
-    "name": "Plan A v2-modified",
-    "description": "modified version",
+  "PLAN-BUG-001": {
+    "id": "PLAN-BUG-001",
+    "name": "Bug测试方案",
+    "description": "用于验证bug修复",
     "leaves": [
       {
-        "leaf_id": "LF-TEST-001",
+        "leaf_id": "LF-BUG-001",
         "order": 0,
         "flipped": false,
         "rotated": 0.0
       },
       {
-        "leaf_id": "LF-TEST-002",
+        "leaf_id": "LF-BUG-002",
         "order": 1,
-        "flipped": false,
-        "rotated": 0.0
-      },
-      {
-        "leaf_id": "LF-TEST-003",
-        "order": 2,
         "flipped": false,
         "rotated": 0.0
       }
     ],
     "is_final": false,
-    "created_at": "2026-06-22T09:25:18.291292",
-    "updated_at": "2026-06-22T09:25:18.450852",
-    "score": 0.1388
-  },
-  "PLAN-B-001": {
-    "id": "PLAN-B-001",
-    "name": "Plan B v1",
-    "description": "alternative ordering",
-    "leaves": [
-      {
-        "leaf_id": "LF-TEST-003",
-        "order": 0,
-        "flipped": false,
-        "rotated": 0.0
-      },
-      {
-        "leaf_id": "LF-TEST-001",
-        "order": 1,
-        "flipped": true,
-        "rotated": 0.0
-      },
-      {
-        "leaf_id": "LF-TEST-002",
-        "order": 2,
-        "flipped": false,
-        "rotated": 0.0
-      }
-    ],
-    "is_final": false,
-    "created_at": "2026-06-22T09:25:18.357043",
-    "updated_at": "2026-06-22T09:25:18.357043",
-    "score": 0.3799
+    "created_at": "2026-06-22T10:28:07.892372",
+    "updated_at": "2026-06-22T10:28:07.984932",
+    "score": 0.4
   }
 }

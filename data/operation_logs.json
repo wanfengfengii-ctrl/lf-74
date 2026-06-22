@@ -1,5 +1,651 @@
 [
   {
+    "id": "04f383a4-cdee-4eeb-8321-604f6903cf6a",
+    "operation_type": "create",
+    "target_type": "submission",
+    "target_id": "e44169a7-0d79-4672-b2a3-8df079d11a11",
+    "operator": "system",
+    "description": "研究者 '张研究员' 提交校勘结果到项目 '最终删除测试项目'",
+    "before_data": null,
+    "after_data": {
+      "id": "e44169a7-0d79-4672-b2a3-8df079d11a11",
+      "project_id": "PROJ-DEL-FINAL",
+      "researcher_id": "R-001",
+      "researcher_name": "张研究员",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-DEL-FINAL",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 2,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "annotation_opinions": [
+        {
+          "leaf_id": "LF-DEL-FINAL",
+          "opinion_type": "text",
+          "content": "test opinion",
+          "confidence": 1.0,
+          "reference": ""
+        }
+      ],
+      "dispute_notes": [
+        {
+          "id": "f27dd090-f2f7-4d1a-a31d-7be6e2b98325",
+          "leaf_id": "LF-DEL-FINAL",
+          "dispute_type": "order",
+          "description": "test dispute",
+          "position": null,
+          "flipped": null,
+          "created_at": "2026-06-22T13:28:17.650761"
+        }
+      ],
+      "remarks": "测试删除",
+      "submitted_at": "2026-06-22T13:28:17.651213",
+      "is_final": false
+    },
+    "created_at": "2026-06-22T13:28:17.654482"
+  },
+  {
+    "id": "dfe5a354-fd77-43c8-8f3f-aed962f73f7d",
+    "operation_type": "create",
+    "target_type": "collab_project",
+    "target_id": "PROJ-DEL-FINAL",
+    "operator": "system",
+    "description": "创建协同项目 '最终删除测试项目' (PROJ-DEL-FINAL)",
+    "before_data": null,
+    "after_data": {
+      "id": "PROJ-DEL-FINAL",
+      "name": "最终删除测试项目",
+      "description": "",
+      "target_leaf_ids": [
+        "LF-DEL-FINAL",
+        "LF-BUG-001"
+      ],
+      "researcher_ids": [
+        "R-001"
+      ],
+      "status": "ongoing",
+      "created_at": "2026-06-22T13:28:17.617866",
+      "updated_at": "2026-06-22T13:28:17.617866",
+      "created_by": "system"
+    },
+    "created_at": "2026-06-22T13:28:17.619055"
+  },
+  {
+    "id": "ff95fd13-80fa-4cf1-9b5c-d2ae8e3d9ca1",
+    "operation_type": "create",
+    "target_type": "leaf",
+    "target_id": "LF-DEL-FINAL",
+    "operator": "system",
+    "description": "创建叶片 'LF-DEL-FINAL'",
+    "before_data": null,
+    "after_data": {
+      "id": "LF-DEL-FINAL",
+      "length": 100.0,
+      "width": 10.0,
+      "holes": [],
+      "residual_text": "",
+      "damage": "",
+      "confirmed": false,
+      "image_path": "",
+      "created_at": "2026-06-22T13:28:17.577797",
+      "updated_at": "2026-06-22T13:28:17.577797"
+    },
+    "created_at": "2026-06-22T13:28:17.579788"
+  },
+  {
+    "id": "46c55807-763f-421e-aa19-6d7fe2554f0b",
+    "operation_type": "create",
+    "target_type": "submission",
+    "target_id": "c01986df-36f2-406f-838d-64e88f58bc32",
+    "operator": "system",
+    "description": "研究者 '张研究员' 提交校勘结果到项目 '删除测试项目'",
+    "before_data": null,
+    "after_data": {
+      "id": "c01986df-36f2-406f-838d-64e88f58bc32",
+      "project_id": "PROJ-DELTEST",
+      "researcher_id": "R-001",
+      "researcher_name": "张研究员",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-TO-DELETE",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 2,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "annotation_opinions": [
+        {
+          "leaf_id": "LF-TO-DELETE",
+          "opinion_type": "text",
+          "content": "测试意见",
+          "confidence": 1.0,
+          "reference": ""
+        }
+      ],
+      "dispute_notes": [
+        {
+          "id": "01c3fadc-4c8d-4900-bc3d-405d07304608",
+          "leaf_id": "LF-TO-DELETE",
+          "dispute_type": "order",
+          "description": "测试争议",
+          "position": null,
+          "flipped": null,
+          "created_at": "2026-06-22T13:25:58.032786"
+        }
+      ],
+      "remarks": "删除测试",
+      "submitted_at": "2026-06-22T13:25:58.033338",
+      "is_final": false
+    },
+    "created_at": "2026-06-22T13:25:58.034481"
+  },
+  {
+    "id": "121f4b75-a08e-4f7c-9c55-f78bf883e106",
+    "operation_type": "create",
+    "target_type": "collab_project",
+    "target_id": "PROJ-DELTEST",
+    "operator": "system",
+    "description": "创建协同项目 '删除测试项目' (PROJ-DELTEST)",
+    "before_data": null,
+    "after_data": {
+      "id": "PROJ-DELTEST",
+      "name": "删除测试项目",
+      "description": "",
+      "target_leaf_ids": [
+        "LF-TO-DELETE",
+        "LF-BUG-001"
+      ],
+      "researcher_ids": [
+        "R-001"
+      ],
+      "status": "ongoing",
+      "created_at": "2026-06-22T13:25:58.026899",
+      "updated_at": "2026-06-22T13:25:58.026899",
+      "created_by": "system"
+    },
+    "created_at": "2026-06-22T13:25:58.027632"
+  },
+  {
+    "id": "2cb56780-0c64-49f7-bf56-009ccf44303f",
+    "operation_type": "create",
+    "target_type": "leaf",
+    "target_id": "LF-TO-DELETE",
+    "operator": "system",
+    "description": "创建叶片 'LF-TO-DELETE'",
+    "before_data": null,
+    "after_data": {
+      "id": "LF-TO-DELETE",
+      "length": 100.0,
+      "width": 10.0,
+      "holes": [],
+      "residual_text": "",
+      "damage": "",
+      "confirmed": false,
+      "image_path": "",
+      "created_at": "2026-06-22T13:25:58.020602",
+      "updated_at": "2026-06-22T13:25:58.020602"
+    },
+    "created_at": "2026-06-22T13:25:58.021470"
+  },
+  {
+    "id": "df2fdca9-9619-47ed-be79-3db764feb798",
+    "operation_type": "confirm",
+    "target_type": "consensus_version",
+    "target_id": "ded53970-ac5a-4280-8e21-f0ffcd356955",
+    "operator": "system",
+    "description": "研究者 '李教授' 批准共识版本 v2（全员已批准，自动设为最终版）",
+    "before_data": {
+      "id": "ded53970-ac5a-4280-8e21-f0ffcd356955",
+      "project_id": "PROJ-001",
+      "version": 2,
+      "name": "自动共识 v2",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T13:25:57.968297",
+      "created_by": "test",
+      "approved_by": [
+        "R-001"
+      ],
+      "is_final": false
+    },
+    "after_data": {
+      "id": "ded53970-ac5a-4280-8e21-f0ffcd356955",
+      "project_id": "PROJ-001",
+      "version": 2,
+      "name": "自动共识 v2",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T13:25:57.968297",
+      "created_by": "test",
+      "approved_by": [
+        "R-001",
+        "R-002"
+      ],
+      "is_final": true
+    },
+    "created_at": "2026-06-22T13:25:58.006854"
+  },
+  {
+    "id": "6c9a1f63-1888-4fb4-b533-d8d3e1ec47e5",
+    "operation_type": "update",
+    "target_type": "collaboration_project",
+    "target_id": "PROJ-001",
+    "operator": "system",
+    "description": "共识版本 v2 获得全员批准，项目状态自动变更为 finalized",
+    "before_data": {
+      "id": "PROJ-001",
+      "name": "《法华经》残卷校勘项目",
+      "description": "对新发现的法华经贝叶经残卷进行多研究者协同校勘",
+      "target_leaf_ids": [
+        "LF-BUG-001",
+        "LF-BUG-002"
+      ],
+      "researcher_ids": [
+        "R-001",
+        "R-002"
+      ],
+      "status": "ongoing",
+      "created_at": "2026-06-22T12:46:37.832405",
+      "updated_at": "2026-06-22T12:46:37.832405",
+      "created_by": "system"
+    },
+    "after_data": {
+      "id": "PROJ-001",
+      "name": "《法华经》残卷校勘项目",
+      "description": "对新发现的法华经贝叶经残卷进行多研究者协同校勘",
+      "target_leaf_ids": [
+        "LF-BUG-001",
+        "LF-BUG-002"
+      ],
+      "researcher_ids": [
+        "R-001",
+        "R-002"
+      ],
+      "status": "finalized",
+      "created_at": "2026-06-22T12:46:37.832405",
+      "updated_at": "2026-06-22T13:25:58.003352",
+      "created_by": "system"
+    },
+    "created_at": "2026-06-22T13:25:58.004237"
+  },
+  {
+    "id": "8514e02d-7af2-4aa9-ade6-b4bdec713555",
+    "operation_type": "confirm",
+    "target_type": "consensus_version",
+    "target_id": "ded53970-ac5a-4280-8e21-f0ffcd356955",
+    "operator": "system",
+    "description": "研究者 '张研究员' 批准共识版本 v2",
+    "before_data": {
+      "id": "ded53970-ac5a-4280-8e21-f0ffcd356955",
+      "project_id": "PROJ-001",
+      "version": 2,
+      "name": "自动共识 v2",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T13:25:57.968297",
+      "created_by": "test",
+      "approved_by": [],
+      "is_final": false
+    },
+    "after_data": {
+      "id": "ded53970-ac5a-4280-8e21-f0ffcd356955",
+      "project_id": "PROJ-001",
+      "version": 2,
+      "name": "自动共识 v2",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T13:25:57.968297",
+      "created_by": "test",
+      "approved_by": [
+        "R-001"
+      ],
+      "is_final": false
+    },
+    "created_at": "2026-06-22T13:25:57.992394"
+  },
+  {
+    "id": "7376f1f9-a4b0-4a7b-8167-4b7f4ed99426",
+    "operation_type": "create",
+    "target_type": "consensus_version",
+    "target_id": "ded53970-ac5a-4280-8e21-f0ffcd356955",
+    "operator": "system",
+    "description": "自动生成项目 '《法华经》残卷校勘项目' 的共识版本 v2",
+    "before_data": null,
+    "after_data": {
+      "id": "ded53970-ac5a-4280-8e21-f0ffcd356955",
+      "project_id": "PROJ-001",
+      "version": 2,
+      "name": "自动共识 v2",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T13:25:57.968297",
+      "created_by": "test",
+      "approved_by": [],
+      "is_final": false
+    },
+    "created_at": "2026-06-22T13:25:57.970745"
+  },
+  {
+    "id": "88a6b4a2-43d1-49e7-98f3-ed61225c5e04",
+    "operation_type": "delete",
+    "target_type": "leaf",
+    "target_id": "LF-BUG-002",
+    "operator": "system",
+    "description": "删除叶片 'LF-BUG-002'，已从 1 个方案中移除",
+    "before_data": {
+      "id": "LF-BUG-002",
+      "length": 480.0,
+      "width": 45.0,
+      "holes": [
+        {
+          "x": 22.5,
+          "y": 50.0
+        }
+      ],
+      "residual_text": "初始残文 2",
+      "damage": "初始破损 2",
+      "confirmed": false,
+      "image_path": "",
+      "created_at": "2026-06-22T10:28:07.870642",
+      "updated_at": "2026-06-22T10:28:07.870642"
+    },
+    "after_data": null,
+    "created_at": "2026-06-22T13:15:47.724572"
+  },
+  {
+    "id": "95992923-2d0a-4de5-bd6d-0cd823ef103d",
+    "operation_type": "confirm",
+    "target_type": "consensus_version",
+    "target_id": "02d8b3a2-f18e-4f13-b78f-d4e2fd84d15e",
+    "operator": "system",
+    "description": "研究者 '李教授' 批准共识版本 v1",
+    "before_data": {
+      "id": "02d8b3a2-f18e-4f13-b78f-d4e2fd84d15e",
+      "project_id": "PROJ-001",
+      "version": 1,
+      "name": "自动共识 v1",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T12:47:39.055897",
+      "created_by": "system",
+      "approved_by": [
+        "R-001"
+      ],
+      "is_final": false
+    },
+    "after_data": {
+      "id": "02d8b3a2-f18e-4f13-b78f-d4e2fd84d15e",
+      "project_id": "PROJ-001",
+      "version": 1,
+      "name": "自动共识 v1",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T12:47:39.055897",
+      "created_by": "system",
+      "approved_by": [
+        "R-001",
+        "R-002"
+      ],
+      "is_final": false
+    },
+    "created_at": "2026-06-22T13:05:37.183882"
+  },
+  {
+    "id": "d2c5d850-6e98-4e13-bb4f-d7893023e83f",
+    "operation_type": "confirm",
+    "target_type": "consensus_version",
+    "target_id": "02d8b3a2-f18e-4f13-b78f-d4e2fd84d15e",
+    "operator": "system",
+    "description": "研究者 '张研究员' 批准共识版本 v1",
+    "before_data": {
+      "id": "02d8b3a2-f18e-4f13-b78f-d4e2fd84d15e",
+      "project_id": "PROJ-001",
+      "version": 1,
+      "name": "自动共识 v1",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T12:47:39.055897",
+      "created_by": "system",
+      "approved_by": [],
+      "is_final": false
+    },
+    "after_data": {
+      "id": "02d8b3a2-f18e-4f13-b78f-d4e2fd84d15e",
+      "project_id": "PROJ-001",
+      "version": 1,
+      "name": "自动共识 v1",
+      "description": "基于 2 位研究者提交自动生成的共识版本，整体一致率 100%",
+      "ordered_leaves": [
+        {
+          "leaf_id": "LF-BUG-001",
+          "order": 0,
+          "flipped": false,
+          "rotated": 0.0
+        },
+        {
+          "leaf_id": "LF-BUG-002",
+          "order": 1,
+          "flipped": false,
+          "rotated": 0.0
+        }
+      ],
+      "consensus_notes": {
+        "LF-BUG-001": "一致率: 100%",
+        "LF-BUG-002": "一致率: 100%；存在争议"
+      },
+      "unresolved_disputes": [
+        "LF-BUG-002"
+      ],
+      "created_at": "2026-06-22T12:47:39.055897",
+      "created_by": "system",
+      "approved_by": [
+        "R-001"
+      ],
+      "is_final": false
+    },
+    "created_at": "2026-06-22T13:05:37.169163"
+  },
+  {
+    "id": "a7302aba-10fc-474e-801f-1197455c8ded",
+    "operation_type": "create",
+    "target_type": "discussion",
+    "target_id": "774f2067-b819-4c41-8580-c152b369c9da",
+    "operator": "system",
+    "description": "研究者 '张研究员' 在项目 '《法华经》残卷校勘项目' 中发表讨论",
+    "before_data": null,
+    "after_data": {
+      "id": "774f2067-b819-4c41-8580-c152b369c9da",
+      "project_id": "PROJ-001",
+      "researcher_id": "R-001",
+      "researcher_name": "张研究员",
+      "reply_to_id": null,
+      "leaf_id": "LF-BUG-002",
+      "content": "关于 LF-BUG-002 是否翻面的问题，我认为应该翻面，因为穿孔位置和残文方向与 LF-BUG-001 呈镜像关系。",
+      "tags": [
+        "翻面",
+        "穿孔比对"
+      ],
+      "created_at": "2026-06-22T12:47:51.226253",
+      "is_resolved": false,
+      "resolution_note": ""
+    },
+    "created_at": "2026-06-22T12:47:51.227043"
+  },
+  {
     "id": "f0633b91-795f-4649-9a0f-4e3b4ee24bff",
     "operation_type": "create",
     "target_type": "consensus_version",
@@ -529,29 +1175,25 @@
     "created_at": "2026-06-22T10:28:07.852301"
   },
   {
-    "id": "a7302aba-10fc-474e-801f-1197455c8ded",
-    "operation_type": "create",
-    "target_type": "discussion",
-    "target_id": "774f2067-b819-4c41-8580-c152b369c9da",
+    "id": "193a9632-82b1-4aa8-954b-156f74c09be4",
+    "operation_type": "delete",
+    "target_type": "leaf",
+    "target_id": "LF-DEL-FINAL",
     "operator": "system",
-    "description": "研究者 '张研究员' 在项目 '《法华经》残卷校勘项目' 中发表讨论",
-    "before_data": null,
-    "after_data": {
-      "id": "774f2067-b819-4c41-8580-c152b369c9da",
-      "project_id": "PROJ-001",
-      "researcher_id": "R-001",
-      "researcher_name": "张研究员",
-      "reply_to_id": null,
-      "leaf_id": "LF-BUG-002",
-      "content": "关于 LF-BUG-002 是否翻面的问题，我认为应该翻面，因为穿孔位置和残文方向与 LF-BUG-001 呈镜像关系。",
-      "tags": [
-        "翻面",
-        "穿孔比对"
-      ],
-      "created_at": "2026-06-22T12:47:51.226253",
-      "is_resolved": false,
-      "resolution_note": ""
+    "description": "删除叶片 'LF-DEL-FINAL'；已从 1 个协同项目中移除；已清理 1 份提交记录中的相关内容",
+    "before_data": {
+      "id": "LF-DEL-FINAL",
+      "length": 100.0,
+      "width": 10.0,
+      "holes": [],
+      "residual_text": "",
+      "damage": "",
+      "confirmed": false,
+      "image_path": "",
+      "created_at": "2026-06-22T13:28:17.577797",
+      "updated_at": "2026-06-22T13:28:17.577797"
     },
-    "created_at": "2026-06-22T12:47:51.227043"
+    "after_data": null,
+    "created_at": "2026-06-22T13:28:17.686683"
   }
 ]

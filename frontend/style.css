@@ -2046,3 +2046,92 @@ body {
     border-radius: 4px;
     font-weight: 500;
 }
+
+.submissions-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 14px;
+}
+
+.submission-card {
+    background: #fff;
+    border: 1px solid #e8dcc8;
+    border-radius: 10px;
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.submission-card:hover {
+    box-shadow: 0 4px 12px rgba(107, 68, 35, 0.1);
+}
+
+.submission-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0e8d8;
+}
+
+.submission-researcher {
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b4423;
+}
+
+.submission-final-tag {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    background: #d6f5e3;
+    color: #276749;
+}
+
+.submission-final-tag.draft {
+    background: #fff5d6;
+    color: #92400e;
+}
+
+.submission-meta {
+    font-size: 12px;
+    color: #8b7355;
+    margin: 4px 0;
+}
+
+.submission-order-list {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.submission-order-chip {
+    background: #f5eddc;
+    border: 1px solid #d8c8ae;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #6b4423;
+}
+
+.submission-stats-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0e8d8;
+    font-size: 12px;
+    color: #8b7355;
+}
+
+.submission-remarks {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #5d4e37;
+    font-style: italic;
+    background: #fffaf2;
+    padding: 8px 10px;
+    border-radius: 6px;
+}

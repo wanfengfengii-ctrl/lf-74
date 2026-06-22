@@ -74,5 +74,110 @@
     "remarks": "R002 remarks",
     "submitted_at": "2026-06-22T12:47:29.626925",
     "is_final": true
+  },
+  {
+    "id": "c01986df-36f2-406f-838d-64e88f58bc32",
+    "project_id": "PROJ-DELTEST",
+    "researcher_id": "R-001",
+    "researcher_name": "张研究员",
+    "ordered_leaves": [
+      {
+        "leaf_id": "LF-TO-DELETE",
+        "order": 1,
+        "flipped": false,
+        "rotated": 0.0
+      },
+      {
+        "leaf_id": "LF-BUG-001",
+        "order": 2,
+        "flipped": false,
+        "rotated": 0.0
+      }
+    ],
+    "annotation_opinions": [
+      {
+        "leaf_id": "LF-TO-DELETE",
+        "opinion_type": "text",
+        "content": "测试意见",
+        "confidence": 1.0,
+        "reference": ""
+      }
+    ],
+    "dispute_notes": [
+      {
+        "id": "01c3fadc-4c8d-4900-bc3d-405d07304608",
+        "leaf_id": "LF-TO-DELETE",
+        "dispute_type": "order",
+        "description": "测试争议",
+        "position": null,
+        "flipped": null,
+        "created_at": "2026-06-22T13:25:58.032786"
+      }
+    ],
+    "remarks": "删除测试",
+    "submitted_at": "2026-06-22T13:25:58.033338",
+    "is_final": false
+  },
+  {
+    "id": "46c1a0fe-3b49-40aa-b065-53b35592fad3",
+    "project_id": "PROJ-DELTEST",
+    "researcher_id": "R-001",
+    "researcher_name": "张研究员",
+    "ordered_leaves": [
+      {
+        "leaf_id": "LF-DEL-TEST2",
+        "order": 1,
+        "flipped": false,
+        "rotated": 0.0
+      },
+      {
+        "leaf_id": "LF-BUG-001",
+        "order": 2,
+        "flipped": false,
+        "rotated": 0.0
+      }
+    ],
+    "annotation_opinions": [
+      {
+        "leaf_id": "LF-DEL-TEST2",
+        "opinion_type": "text",
+        "content": "test",
+        "confidence": 1.0,
+        "reference": ""
+      }
+    ],
+    "dispute_notes": [
+      {
+        "id": "",
+        "leaf_id": "LF-DEL-TEST2",
+        "dispute_type": "order",
+        "description": "test",
+        "position": null,
+        "flipped": null,
+        "created_at": "2026-06-22T13:26:46.814932"
+      }
+    ],
+    "remarks": "",
+    "submitted_at": "2026-06-22T13:26:46.814938",
+    "is_final": false
+  },
+  {
+    "id": "e44169a7-0d79-4672-b2a3-8df079d11a11",
+    "project_id": "PROJ-DEL-FINAL",
+    "researcher_id": "R-001",
+    "researcher_name": "张研究员",
+    "ordered_leaves": [
+      {
+        "leaf_id": "LF-BUG-001",
+        "order": 2,
+        "flipped": false,
+        "rotated": 0.0
+      }
+    ],
+    "annotation_opinions": [],
+    "dispute_notes": [],
+    "remarks": "测试删除",
+    "submitted_at": "2026-06-22T13:28:17.651213",
+    "is_final": false
   }
 ]

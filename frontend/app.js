@@ -1745,12 +1745,74 @@ async function viewCurrentProjectSubmissions() {
     if (!pid) return;
     document.querySelectorAll(".collab-tab-btn").forEach((b) => b.classList.remove("active"));
     document.querySelectorAll(".collab-tab-content").forEach((c) => c.classList.remove("active"));
-    document.querySelector('.collab-tab-btn[data-collab-tab="summary"]').classList.add("active");
-    document.getElementById("collab-summary").classList.add("active");
+    document.querySelector('.collab-tab-btn[data-collab-tab="submission"]').classList.add("active");
+    document.getElementById("collab-submission").classList.add("active");
     closeModal("projectDetailModal");
-    await populateSummaryProjectSelect();
-    document.getElementById("summaryProjectSelect").value = pid;
-    await loadSummary();
+    populateSubmissionProjectSelect();
+    populateSubmissionResearcherSelect();
+    document.getElementById("submissionProjectSelect").value = pid;
+    await loadExistingSubmissions(pid);
+}
+
+async function loadExistingSubmissions(pid) {
+    if (!pid) {
+        document.getElementById("existingSubmissionsList").innerHTML = '<div class="empty-state-inline">请先选择协同项目</div>';
+        return;
+    }
+    try {
+        const resp = await fetch(`/api/collaboration/projects/${encodeURIComponent(pid)}/submissions`);
+        if (!resp.ok) throw new Error(await resp.text());
+        const subs = await resp.json();
+        state.collaboration.submissions = subs;
+        renderExistingSubmissions();
+    } catch (e) {
+        showToast("加载提交记录失败：" + e.message, "error");
+        document.getElementById("existingSubmissionsList").innerHTML = '<div class="empty-state-inline">加载失败</div>';
+    }
+}
+
+function renderExistingSubmissions() {
+    const box = document.getElementById("existingSubmissionsList");
+    const subs = state.collaboration.submissions || [];
+    if (subs.length === 0) {
+        box.innerHTML = '<div class="empty-state-inline">该项目暂无提交记录</div>';
+        return;
+    }
+    box.innerHTML = subs.map((s) => {
+        const orderChips = (s.ordered_leaves || [])
+            .slice()
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .map((rl) => {
+                const flip = rl.is_flipped || rl.flipped ? " (翻面)" : "";
+                return `<span class="submission-order-chip">#${rl.order || 0} ${rl.leaf_id}${flip}</span>`;
+            })
+            .join("");
+        const finalTag = s.is_final
+            ? '<span class="submission-final-tag">最终提交</span>'
+            : '<span class="submission-final-tag draft">草稿</span>';
+        const submittedAt = new Date(s.submitted_at).toLocaleString();
+        const opinionCount = (s.annotation_opinions || []).length;
+        const disputeCount = (s.dispute_notes || []).length;
+        const remarksHtml = s.remarks
+            ? `<div class="submission-remarks">整体备注：${escapeHtml(s.remarks)}</div>`
+            : "";
+        return `
+            <div class="submission-card">
+                <div class="submission-card-header">
+                    <span class="submission-researcher">${escapeHtml(s.researcher_name || s.researcher_id)}</span>
+                    ${finalTag}
+                </div>
+                <div class="submission-meta">提交时间：${submittedAt}</div>
+                <div class="submission-meta">排序结果（${s.ordered_leaves?.length || 0}片）：</div>
+                <div class="submission-order-list">${orderChips || '<span style="color:#8b7355;font-size:13px;">未排序</span>'}</div>
+                <div class="submission-stats-row">
+                    <span>📝 标注意见：${opinionCount}条</span>
+                    <span>⚠️ 争议说明：${disputeCount}条</span>
+                </div>
+                ${remarksHtml}
+            </div>
+        `;
+    }).join("");
 }
 
 function populateSubmissionProjectSelect() {
@@ -1811,6 +1873,7 @@ async function loadSubmissionProject() {
     renderDisputesList();
     document.getElementById("submissionRemarks").value = "";
     document.getElementById("submissionFinal").checked = false;
+    await loadExistingSubmissions(pid);
 }
 
 function renderSubmissionLeafLists() {

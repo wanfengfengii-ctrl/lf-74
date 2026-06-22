@@ -9,17 +9,11 @@
         "order": 0,
         "flipped": false,
         "rotated": 0.0
-      },
-      {
-        "leaf_id": "LF-BUG-002",
-        "order": 1,
-        "flipped": false,
-        "rotated": 0.0
       }
     ],
     "is_final": false,
     "created_at": "2026-06-22T10:28:07.892372",
-    "updated_at": "2026-06-22T10:28:07.984932",
-    "score": 0.4
+    "updated_at": "2026-06-22T13:15:47.723633",
+    "score": 1.0
   }
 }

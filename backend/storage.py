@@ -15,6 +15,11 @@ from .models import (
     ResearcherSubmission,
     DiscussionMessage,
     ConsensusVersion,
+    DiscoverySite,
+    CollectionUnit,
+    ProvenanceTransfer,
+    RepairRecord,
+    ResearchCitation,
 )
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
@@ -29,6 +34,12 @@ COLLAB_PROJECTS_FILE = os.path.join(DATA_DIR, "collab_projects.json")
 SUBMISSIONS_FILE = os.path.join(DATA_DIR, "researcher_submissions.json")
 DISCUSSIONS_FILE = os.path.join(DATA_DIR, "discussion_messages.json")
 CONSENSUS_VERSIONS_FILE = os.path.join(DATA_DIR, "consensus_versions.json")
+DISCOVERY_SITES_FILE = os.path.join(DATA_DIR, "discovery_sites.json")
+COLLECTION_UNITS_FILE = os.path.join(DATA_DIR, "collection_units.json")
+PROVENANCE_TRANSFERS_FILE = os.path.join(DATA_DIR, "provenance_transfers.json")
+REPAIR_RECORDS_FILE = os.path.join(DATA_DIR, "repair_records.json")
+RESEARCH_CITATIONS_FILE = os.path.join(DATA_DIR, "research_citations.json")
+LEAF_SITE_LINKS_FILE = os.path.join(DATA_DIR, "leaf_site_links.json")
 
 
 def _ensure_data_dir():
@@ -453,3 +464,282 @@ def get_next_consensus_version_number(project_id: str) -> int:
     if not existing:
         return 1
     return max(v.version for v in existing) + 1
+
+
+def load_all_submissions() -> List[ResearcherSubmission]:
+    raw = _read_json_list(SUBMISSIONS_FILE)
+    result = []
+    for item in raw:
+        item["submitted_at"] = datetime.fromisoformat(item["submitted_at"])
+        for note in item.get("dispute_notes", []):
+            if "created_at" in note:
+                note["created_at"] = datetime.fromisoformat(note["created_at"])
+        result.append(ResearcherSubmission(**item))
+    return result
+
+
+def save_all_submissions(submissions: List[ResearcherSubmission]):
+    raw = [s.model_dump(mode="json") for s in submissions]
+    _write_json_list(SUBMISSIONS_FILE, raw)
+
+
+def load_all_discussions() -> List[DiscussionMessage]:
+    raw = _read_json_list(DISCUSSIONS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        result.append(DiscussionMessage(**item))
+    return result
+
+
+def save_all_discussions(messages: List[DiscussionMessage]):
+    raw = [m.model_dump(mode="json") for m in messages]
+    _write_json_list(DISCUSSIONS_FILE, raw)
+
+
+def load_all_consensus_versions() -> List[ConsensusVersion]:
+    raw = _read_json_list(CONSENSUS_VERSIONS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        result.append(ConsensusVersion(**item))
+    return result
+
+
+def save_all_consensus_versions(versions: List[ConsensusVersion]):
+    raw = [v.model_dump(mode="json") for v in versions]
+    _write_json_list(CONSENSUS_VERSIONS_FILE, raw)
+
+
+def load_all_discovery_sites() -> Dict[str, DiscoverySite]:
+    raw = _read_json(DISCOVERY_SITES_FILE)
+    result = {}
+    for sid, sdata in raw.items():
+        sdata["created_at"] = datetime.fromisoformat(sdata["created_at"])
+        sdata["updated_at"] = datetime.fromisoformat(sdata["updated_at"])
+        result[sid] = DiscoverySite(**sdata)
+    return result
+
+
+def save_all_discovery_sites(sites: Dict[str, DiscoverySite]):
+    raw = {}
+    for sid, site in sites.items():
+        raw[sid] = site.model_dump(mode="json")
+    _write_json(DISCOVERY_SITES_FILE, raw)
+
+
+def get_discovery_site(site_id: str) -> Optional[DiscoverySite]:
+    sites = load_all_discovery_sites()
+    return sites.get(site_id)
+
+
+def load_leaf_site_links() -> Dict[str, str]:
+    raw = _read_json(LEAF_SITE_LINKS_FILE)
+    return dict(raw)
+
+
+def save_leaf_site_links(links: Dict[str, str]):
+    _write_json(LEAF_SITE_LINKS_FILE, links)
+
+
+def get_leaf_discovery_site_id(leaf_id: str) -> Optional[str]:
+    links = load_leaf_site_links()
+    return links.get(leaf_id)
+
+
+def set_leaf_discovery_site(leaf_id: str, site_id: Optional[str]):
+    links = load_leaf_site_links()
+    if site_id is None:
+        if leaf_id in links:
+            del links[leaf_id]
+    else:
+        links[leaf_id] = site_id
+    save_leaf_site_links(links)
+
+
+def get_leaves_by_discovery_site(site_id: str) -> List[str]:
+    links = load_leaf_site_links()
+    return [lid for lid, sid in links.items() if sid == site_id]
+
+
+def load_all_collection_units() -> Dict[str, CollectionUnit]:
+    raw = _read_json(COLLECTION_UNITS_FILE)
+    result = {}
+    for uid, udata in raw.items():
+        udata["created_at"] = datetime.fromisoformat(udata["created_at"])
+        udata["updated_at"] = datetime.fromisoformat(udata["updated_at"])
+        result[uid] = CollectionUnit(**udata)
+    return result
+
+
+def save_all_collection_units(units: Dict[str, CollectionUnit]):
+    raw = {}
+    for uid, unit in units.items():
+        raw[uid] = unit.model_dump(mode="json")
+    _write_json(COLLECTION_UNITS_FILE, raw)
+
+
+def get_collection_unit(unit_id: str) -> Optional[CollectionUnit]:
+    units = load_all_collection_units()
+    return units.get(unit_id)
+
+
+def load_all_provenance_transfers() -> List[ProvenanceTransfer]:
+    raw = _read_json_list(PROVENANCE_TRANSFERS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        result.append(ProvenanceTransfer(**item))
+    return result
+
+
+def load_transfers_by_leaf(leaf_id: str) -> List[ProvenanceTransfer]:
+    all_transfers = load_all_provenance_transfers()
+    result = [t for t in all_transfers if t.leaf_id == leaf_id]
+    result.sort(key=lambda t: t.transfer_date or "")
+    return result
+
+
+def get_provenance_transfer(transfer_id: str) -> Optional[ProvenanceTransfer]:
+    all_transfers = load_all_provenance_transfers()
+    for t in all_transfers:
+        if t.id == transfer_id:
+            return t
+    return None
+
+
+def save_provenance_transfer(transfer: ProvenanceTransfer) -> ProvenanceTransfer:
+    raw_list = _read_json_list(PROVENANCE_TRANSFERS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        existing.append(ProvenanceTransfer(**item))
+
+    if not transfer.id:
+        transfer.id = str(uuid.uuid4())
+    if not transfer.created_at:
+        transfer.created_at = datetime.now()
+
+    existing = [t for t in existing if t.id != transfer.id]
+    existing.append(transfer)
+    raw = [t.model_dump(mode="json") for t in existing]
+    _write_json_list(PROVENANCE_TRANSFERS_FILE, raw)
+    return transfer
+
+
+def delete_provenance_transfer(transfer_id: str):
+    raw = _read_json_list(PROVENANCE_TRANSFERS_FILE)
+    filtered = [item for item in raw if item.get("id") != transfer_id]
+    _write_json_list(PROVENANCE_TRANSFERS_FILE, filtered)
+
+
+def load_all_repair_records() -> List[RepairRecord]:
+    raw = _read_json_list(REPAIR_RECORDS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        result.append(RepairRecord(**item))
+    return result
+
+
+def load_repairs_by_leaf(leaf_id: str) -> List[RepairRecord]:
+    all_records = load_all_repair_records()
+    result = [r for r in all_records if r.leaf_id == leaf_id]
+    result.sort(key=lambda r: r.repair_date or "")
+    return result
+
+
+def get_repair_record(record_id: str) -> Optional[RepairRecord]:
+    all_records = load_all_repair_records()
+    for r in all_records:
+        if r.id == record_id:
+            return r
+    return None
+
+
+def save_repair_record(record: RepairRecord) -> RepairRecord:
+    raw_list = _read_json_list(REPAIR_RECORDS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        existing.append(RepairRecord(**item))
+
+    if not record.id:
+        record.id = str(uuid.uuid4())
+    if not record.created_at:
+        record.created_at = datetime.now()
+
+    existing = [r for r in existing if r.id != record.id]
+    existing.append(record)
+    raw = [r.model_dump(mode="json") for r in existing]
+    _write_json_list(REPAIR_RECORDS_FILE, raw)
+    return record
+
+
+def delete_repair_record(record_id: str):
+    raw = _read_json_list(REPAIR_RECORDS_FILE)
+    filtered = [item for item in raw if item.get("id") != record_id]
+    _write_json_list(REPAIR_RECORDS_FILE, filtered)
+
+
+def load_all_research_citations() -> List[ResearchCitation]:
+    raw = _read_json_list(RESEARCH_CITATIONS_FILE)
+    result = []
+    for item in raw:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        result.append(ResearchCitation(**item))
+    return result
+
+
+def load_citations_by_leaf(leaf_id: str) -> List[ResearchCitation]:
+    all_citations = load_all_research_citations()
+    result = [c for c in all_citations if c.leaf_id == leaf_id]
+    result.sort(key=lambda c: c.year or 0, reverse=True)
+    return result
+
+
+def get_research_citation(citation_id: str) -> Optional[ResearchCitation]:
+    all_citations = load_all_research_citations()
+    for c in all_citations:
+        if c.id == citation_id:
+            return c
+    return None
+
+
+def save_research_citation(citation: ResearchCitation) -> ResearchCitation:
+    raw_list = _read_json_list(RESEARCH_CITATIONS_FILE)
+    existing = []
+    for item in raw_list:
+        item["created_at"] = datetime.fromisoformat(item["created_at"])
+        item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+        existing.append(ResearchCitation(**item))
+
+    if not citation.id:
+        citation.id = str(uuid.uuid4())
+    if not citation.created_at:
+        citation.created_at = datetime.now()
+
+    existing = [c for c in existing if c.id != citation.id]
+    existing.append(citation)
+    raw = [c.model_dump(mode="json") for c in existing]
+    _write_json_list(RESEARCH_CITATIONS_FILE, raw)
+    return citation
+
+
+def delete_research_citation(citation_id: str):
+    raw = _read_json_list(RESEARCH_CITATIONS_FILE)
+    filtered = [item for item in raw if item.get("id") != citation_id]
+    _write_json_list(RESEARCH_CITATIONS_FILE, filtered)
+
+
+def get_leaf_current_unit(leaf_id: str) -> Optional[CollectionUnit]:
+    transfers = load_transfers_by_leaf(leaf_id)
+    if not transfers:
+        return None
+    last_transfer = transfers[-1]
+    return get_collection_unit(last_transfer.to_unit_id)

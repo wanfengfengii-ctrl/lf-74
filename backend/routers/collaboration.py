@@ -587,12 +587,34 @@ def approve_consensus_version(version_id: str, researcher_id: str):
     before_data = version.model_dump(mode="json")
     if researcher_id not in version.approved_by:
         version.approved_by.append(researcher_id)
+
+    approved_set = set(version.approved_by)
+    required_set = set(project.researcher_ids)
+    if not version.is_final and len(required_set) > 0 and required_set.issubset(approved_set):
+        version.is_final = True
+        all_projects = load_all_collab_projects()
+        if version.project_id in all_projects:
+            updated_project = all_projects[version.project_id]
+            project_before = updated_project.model_dump(mode="json")
+            updated_project.status = "finalized"
+            updated_project.updated_at = datetime.now()
+            all_projects[version.project_id] = updated_project
+            save_all_collab_projects(all_projects)
+            add_operation_log(
+                operation_type=OperationType.UPDATE,
+                target_type="collaboration_project",
+                target_id=project.id,
+                description=f"共识版本 v{version.version} 获得全员批准，项目状态自动变更为 finalized",
+                before_data=project_before,
+                after_data=updated_project.model_dump(mode="json"),
+            )
+
     version = save_consensus_version(version)
     add_operation_log(
         operation_type=OperationType.CONFIRM,
         target_type="consensus_version",
         target_id=version_id,
-        description=f"研究者 '{researcher.name}' 批准共识版本 v{version.version}",
+        description=f"研究者 '{researcher.name}' 批准共识版本 v{version.version}{'（全员已批准，自动设为最终版）' if version.is_final else ''}",
         before_data=before_data,
         after_data=version.model_dump(mode="json"),
     )

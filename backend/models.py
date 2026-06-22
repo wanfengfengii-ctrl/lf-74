@@ -419,3 +419,310 @@ class ConsensusVersionCreate(BaseModel):
     unresolved_disputes: List[str] = Field(default_factory=list)
     created_by: str = Field(default="system")
     is_final: bool = Field(default=False)
+
+
+class DiscoverySite(BaseModel):
+    id: str = Field(description="发现地点唯一ID")
+    name: str = Field(description="地点名称，如：敦煌莫高窟第17窟")
+    region: str = Field(default="", description="所属地区/省份")
+    latitude: Optional[float] = Field(default=None, description="纬度")
+    longitude: Optional[float] = Field(default=None, description="经度")
+    discovery_date: Optional[str] = Field(default=None, description="发现日期（YYYY-MM-DD或年份）")
+    discoverer: str = Field(default="", description="发现者/考察队")
+    description: str = Field(default="", description="详细描述，包括地层、环境等")
+    archaeological_context: str = Field(default="", description="考古背景信息")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class DiscoverySiteCreate(BaseModel):
+    id: str = Field(description="发现地点唯一ID")
+    name: str = Field(description="地点名称")
+    region: str = Field(default="")
+    latitude: Optional[float] = Field(default=None)
+    longitude: Optional[float] = Field(default=None)
+    discovery_date: Optional[str] = Field(default=None)
+    discoverer: str = Field(default="")
+    description: str = Field(default="")
+    archaeological_context: str = Field(default="")
+
+
+class DiscoverySiteUpdate(BaseModel):
+    name: Optional[str] = None
+    region: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    discovery_date: Optional[str] = None
+    discoverer: Optional[str] = None
+    description: Optional[str] = None
+    archaeological_context: Optional[str] = None
+
+
+class CollectionUnit(BaseModel):
+    id: str = Field(description="收藏单位唯一ID")
+    name: str = Field(description="单位名称，如：大英图书馆")
+    type: str = Field(default="library", description="单位类型：library/museum/archive/university/private/other")
+    country: str = Field(default="", description="所属国家")
+    city: str = Field(default="", description="所在城市")
+    address: str = Field(default="", description="详细地址")
+    contact: str = Field(default="", description="联系方式")
+    curator: str = Field(default="", description="负责人/馆长")
+    description: str = Field(default="", description="单位介绍与收藏特色")
+    established_year: Optional[int] = Field(default=None, description="成立年份")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class CollectionUnitCreate(BaseModel):
+    id: str = Field(description="收藏单位唯一ID")
+    name: str = Field(description="单位名称")
+    type: str = Field(default="library")
+    country: str = Field(default="")
+    city: str = Field(default="")
+    address: str = Field(default="")
+    contact: str = Field(default="")
+    curator: str = Field(default="")
+    description: str = Field(default="")
+    established_year: Optional[int] = Field(default=None)
+
+
+class CollectionUnitUpdate(BaseModel):
+    name: Optional[str] = None
+    type: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    address: Optional[str] = None
+    contact: Optional[str] = None
+    curator: Optional[str] = None
+    description: Optional[str] = None
+    established_year: Optional[int] = None
+
+
+class ProvenanceTransfer(BaseModel):
+    id: str = Field(description="流转记录唯一ID")
+    leaf_id: str = Field(description="关联的叶片ID")
+    transfer_date: Optional[str] = Field(default=None, description="流转日期（YYYY-MM-DD或年份区间）")
+    from_unit_id: Optional[str] = Field(default=None, description="转出收藏单位ID，None表示首次入藏/发现")
+    to_unit_id: str = Field(description="转入收藏单位ID")
+    transfer_type: str = Field(default="transfer", description="流转类型：discovery/purchase/donation/transfer/loan/confiscation/other")
+    transferred_by: str = Field(default="", description="经手人/经办人")
+    document_ref: str = Field(default="", description="相关凭证/档案编号")
+    access_number: str = Field(default="", description="入藏编号/登记号")
+    condition_report: str = Field(default="", description="流转时的品相报告")
+    notes: str = Field(default="", description="备注说明，包括流转原因、历史背景")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class ProvenanceTransferCreate(BaseModel):
+    leaf_id: str = Field(description="关联的叶片ID")
+    transfer_date: Optional[str] = Field(default=None)
+    from_unit_id: Optional[str] = Field(default=None)
+    to_unit_id: str = Field(description="转入收藏单位ID")
+    transfer_type: str = Field(default="transfer")
+    transferred_by: str = Field(default="")
+    document_ref: str = Field(default="")
+    access_number: str = Field(default="")
+    condition_report: str = Field(default="")
+    notes: str = Field(default="")
+
+
+class ProvenanceTransferUpdate(BaseModel):
+    transfer_date: Optional[str] = None
+    from_unit_id: Optional[str] = None
+    to_unit_id: Optional[str] = None
+    transfer_type: Optional[str] = None
+    transferred_by: Optional[str] = None
+    document_ref: Optional[str] = None
+    access_number: Optional[str] = None
+    condition_report: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class RepairRecord(BaseModel):
+    id: str = Field(description="修复记录唯一ID")
+    leaf_id: str = Field(description="关联的叶片ID")
+    repair_date: Optional[str] = Field(default=None, description="修复日期")
+    performed_by: str = Field(default="", description="修复人员/机构")
+    location: str = Field(default="", description="修复地点")
+    repair_type: str = Field(default="conservation", description="修复类型：conservation(保护)/restoration(修复)/rebinding(重装)/digitization(数字化)/other")
+    before_condition: str = Field(default="", description="修复前状况描述")
+    after_condition: str = Field(default="", description="修复后状况描述")
+    materials_used: str = Field(default="", description="使用的材料")
+    techniques_used: str = Field(default="", description="使用的技术方法")
+    treatment_report: str = Field(default="", description="详细处理报告")
+    document_ref: str = Field(default="", description="修复档案编号")
+    before_images: List[str] = Field(default_factory=list, description="修复前图片路径列表")
+    after_images: List[str] = Field(default_factory=list, description="修复后图片路径列表")
+    notes: str = Field(default="", description="备注")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class RepairRecordCreate(BaseModel):
+    leaf_id: str = Field(description="关联的叶片ID")
+    repair_date: Optional[str] = Field(default=None)
+    performed_by: str = Field(default="")
+    location: str = Field(default="")
+    repair_type: str = Field(default="conservation")
+    before_condition: str = Field(default="")
+    after_condition: str = Field(default="")
+    materials_used: str = Field(default="")
+    techniques_used: str = Field(default="")
+    treatment_report: str = Field(default="")
+    document_ref: str = Field(default="")
+    before_images: List[str] = Field(default_factory=list)
+    after_images: List[str] = Field(default_factory=list)
+    notes: str = Field(default="")
+
+
+class RepairRecordUpdate(BaseModel):
+    repair_date: Optional[str] = None
+    performed_by: Optional[str] = None
+    location: Optional[str] = None
+    repair_type: Optional[str] = None
+    before_condition: Optional[str] = None
+    after_condition: Optional[str] = None
+    materials_used: Optional[str] = None
+    techniques_used: Optional[str] = None
+    treatment_report: Optional[str] = None
+    document_ref: Optional[str] = None
+    before_images: Optional[List[str]] = None
+    after_images: Optional[List[str]] = None
+    notes: Optional[str] = None
+
+
+class ResearchCitation(BaseModel):
+    id: str = Field(description="引用记录唯一ID")
+    leaf_id: str = Field(description="关联的叶片ID")
+    citation_type: str = Field(default="journal", description="引用类型：journal/book/conference/thesis/website/other")
+    title: str = Field(description="文献标题")
+    authors: List[str] = Field(default_factory=list, description="作者列表")
+    year: Optional[int] = Field(default=None, description="出版年份")
+    journal: str = Field(default="", description="期刊/出版物名称")
+    volume: str = Field(default="", description="卷号")
+    issue: str = Field(default="", description="期号")
+    pages: str = Field(default="", description="页码范围")
+    publisher: str = Field(default="", description="出版社")
+    doi: str = Field(default="", description="DOI编号")
+    url: str = Field(default="", description="在线链接")
+    language: str = Field(default="zh", description="文献语言")
+    cited_content: str = Field(default="", description="引用该叶片的具体内容/论述")
+    cited_pages: str = Field(default="", description="引用内容在文献中的页码")
+    keywords: List[str] = Field(default_factory=list, description="关键词")
+    significance: str = Field(default="", description="该引用对叶片研究的重要性说明")
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class ResearchCitationCreate(BaseModel):
+    leaf_id: str = Field(description="关联的叶片ID")
+    citation_type: str = Field(default="journal")
+    title: str = Field(description="文献标题")
+    authors: List[str] = Field(default_factory=list)
+    year: Optional[int] = Field(default=None)
+    journal: str = Field(default="")
+    volume: str = Field(default="")
+    issue: str = Field(default="")
+    pages: str = Field(default="")
+    publisher: str = Field(default="")
+    doi: str = Field(default="")
+    url: str = Field(default="")
+    language: str = Field(default="zh")
+    cited_content: str = Field(default="")
+    cited_pages: str = Field(default="")
+    keywords: List[str] = Field(default_factory=list)
+    significance: str = Field(default="")
+
+
+class ResearchCitationUpdate(BaseModel):
+    citation_type: Optional[str] = None
+    title: Optional[str] = None
+    authors: Optional[List[str]] = None
+    year: Optional[int] = None
+    journal: Optional[str] = None
+    volume: Optional[str] = None
+    issue: Optional[str] = None
+    pages: Optional[str] = None
+    publisher: Optional[str] = None
+    doi: Optional[str] = None
+    url: Optional[str] = None
+    language: Optional[str] = None
+    cited_content: Optional[str] = None
+    cited_pages: Optional[str] = None
+    keywords: Optional[List[str]] = None
+    significance: Optional[str] = None
+
+
+class TimelineEvent(BaseModel):
+    event_id: str = Field(description="事件ID")
+    event_type: str = Field(description="事件类型：discovery/transfer/repair/citation/associated_plan/consensus")
+    event_date: Optional[str] = Field(default=None, description="事件日期")
+    title: str = Field(description="事件标题")
+    description: str = Field(default="", description="事件描述")
+    location: Optional[str] = Field(default=None, description="事件发生地点")
+    related_entity_id: Optional[str] = Field(default=None, description="关联实体ID（单位/方案/项目等）")
+    related_entity_name: Optional[str] = Field(default=None, description="关联实体名称")
+    extra_data: Dict[str, Any] = Field(default_factory=dict, description="额外数据")
+
+
+class ProvenanceTimeline(BaseModel):
+    leaf_id: str = Field(description="叶片ID")
+    leaf_summary: Dict[str, Any] = Field(description="叶片基本信息摘要")
+    events: List[TimelineEvent] = Field(description="按时间排序的事件列表")
+    total_events: int = Field(description="事件总数")
+
+
+class GraphNode(BaseModel):
+    node_id: str = Field(description="节点唯一ID")
+    node_type: str = Field(description="节点类型：leaf/site/unit/person/publication/plan")
+    label: str = Field(description="节点显示标签")
+    properties: Dict[str, Any] = Field(default_factory=dict, description="节点属性")
+
+
+class GraphEdge(BaseModel):
+    edge_id: str = Field(description="边唯一ID")
+    source_id: str = Field(description="起始节点ID")
+    target_id: str = Field(description="目标节点ID")
+    relation_type: str = Field(description="关系类型：discovered_at/housed_at/transferred_to/repaired_by/cited_in/included_in/discussed_in")
+    label: str = Field(default="", description="关系标签")
+    date: Optional[str] = Field(default=None, description="关系日期")
+    properties: Dict[str, Any] = Field(default_factory=dict, description="边属性")
+
+
+class ProvenanceGraph(BaseModel):
+    leaf_id: str = Field(description="中心叶片ID")
+    nodes: List[GraphNode] = Field(description="图节点列表")
+    edges: List[GraphEdge] = Field(description="图边列表")
+    node_count: int = Field(description="节点总数")
+    edge_count: int = Field(description="边总数")
+
+
+class LeafProvenanceSummary(BaseModel):
+    leaf_id: str = Field(description="叶片ID")
+    discovery_site: Optional[DiscoverySite] = Field(default=None, description="发现地点信息")
+    current_unit: Optional[CollectionUnit] = Field(default=None, description="当前收藏单位")
+    transfer_count: int = Field(default=0, description="流转次数")
+    repair_count: int = Field(default=0, description="修复次数")
+    citation_count: int = Field(default=0, description="学术引用次数")
+    associated_plans: List[Dict[str, Any]] = Field(default_factory=list, description="关联的复原方案列表")
+    associated_projects: List[Dict[str, Any]] = Field(default_factory=list, description="关联的协同校勘项目列表")
+    associated_annotations: List[Dict[str, Any]] = Field(default_factory=list, description="关联的图片标注摘要")
+    consensus_summary: Optional[Dict[str, Any]] = Field(default=None, description="协同校勘共识摘要")
+    source_reliability: float = Field(default=0.0, description="来源可靠性评分 0-1")
+    completeness_score: float = Field(default=0.0, description="谱系信息完整度评分 0-1")
+
+
+class RelatedLeavesQuery(BaseModel):
+    by_site: Optional[bool] = Field(default=True, description="按发现地点关联")
+    by_unit: Optional[bool] = Field(default=True, description="按收藏单位关联")
+    by_transfer: Optional[bool] = Field(default=True, description="按流转路径关联")
+    by_citation: Optional[bool] = Field(default=True, description="按学术引用关联")
+    by_plan: Optional[bool] = Field(default=True, description="按复原方案关联")
+
+
+class RelatedLeafInfo(BaseModel):
+    leaf_id: str = Field(description="关联叶片ID")
+    relation_type: str = Field(description="关联类型")
+    relation_detail: str = Field(default="", description="关联详情")
+    strength: float = Field(default=0.0, description="关联强度 0-1")

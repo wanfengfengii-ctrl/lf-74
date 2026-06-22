@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from backend.routers import leaves, plans, sort, annotations, compare, audit, collaboration
+from backend.routers import leaves, plans, sort, annotations, compare, audit, collaboration, provenance
 
 app = FastAPI(
     title="贝叶经叶片整理系统",
@@ -32,6 +32,7 @@ app.include_router(annotations.router, prefix="/api")
 app.include_router(compare.router, prefix="/api")
 app.include_router(audit.router, prefix="/api")
 app.include_router(collaboration.router, prefix="/api")
+app.include_router(provenance.router, prefix="/api")
 
 frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 if os.path.exists(frontend_dir):

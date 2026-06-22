@@ -499,7 +499,7 @@ class CollectionUnitUpdate(BaseModel):
 
 
 class ProvenanceTransfer(BaseModel):
-    id: str = Field(description="流转记录唯一ID")
+    id: Optional[str] = Field(default=None, description="流转记录唯一ID")
     leaf_id: str = Field(description="关联的叶片ID")
     transfer_date: Optional[str] = Field(default=None, description="流转日期（YYYY-MM-DD或年份区间）")
     from_unit_id: Optional[str] = Field(default=None, description="转出收藏单位ID，None表示首次入藏/发现")
@@ -515,7 +515,6 @@ class ProvenanceTransfer(BaseModel):
 
 
 class ProvenanceTransferCreate(BaseModel):
-    leaf_id: str = Field(description="关联的叶片ID")
     transfer_date: Optional[str] = Field(default=None)
     from_unit_id: Optional[str] = Field(default=None)
     to_unit_id: str = Field(description="转入收藏单位ID")
@@ -540,7 +539,7 @@ class ProvenanceTransferUpdate(BaseModel):
 
 
 class RepairRecord(BaseModel):
-    id: str = Field(description="修复记录唯一ID")
+    id: Optional[str] = Field(default=None, description="修复记录唯一ID")
     leaf_id: str = Field(description="关联的叶片ID")
     repair_date: Optional[str] = Field(default=None, description="修复日期")
     performed_by: str = Field(default="", description="修复人员/机构")
@@ -560,7 +559,6 @@ class RepairRecord(BaseModel):
 
 
 class RepairRecordCreate(BaseModel):
-    leaf_id: str = Field(description="关联的叶片ID")
     repair_date: Optional[str] = Field(default=None)
     performed_by: str = Field(default="")
     location: str = Field(default="")
@@ -593,7 +591,7 @@ class RepairRecordUpdate(BaseModel):
 
 
 class ResearchCitation(BaseModel):
-    id: str = Field(description="引用记录唯一ID")
+    id: Optional[str] = Field(default=None, description="引用记录唯一ID")
     leaf_id: str = Field(description="关联的叶片ID")
     citation_type: str = Field(default="journal", description="引用类型：journal/book/conference/thesis/website/other")
     title: str = Field(description="文献标题")
@@ -616,7 +614,6 @@ class ResearchCitation(BaseModel):
 
 
 class ResearchCitationCreate(BaseModel):
-    leaf_id: str = Field(description="关联的叶片ID")
     citation_type: str = Field(default="journal")
     title: str = Field(description="文献标题")
     authors: List[str] = Field(default_factory=list)

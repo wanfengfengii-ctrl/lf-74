@@ -1,0 +1,15 @@
+{
+  "DS-MGK-001": {
+    "id": "DS-MGK-001",
+    "name": "敦煌莫高窟第17窟",
+    "region": "甘肃敦煌",
+    "latitude": null,
+    "longitude": null,
+    "discovery_date": "1900-06-22",
+    "discoverer": "王圆箓",
+    "description": "藏经洞，出土大量敦煌遗书",
+    "archaeological_context": "晚唐时期封闭式洞窟",
+    "created_at": "2026-06-22T13:54:54.220994",
+    "updated_at": "2026-06-22T13:54:54.220994"
+  }
+}
